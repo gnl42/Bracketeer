@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-      id="com.chookapp.org.BracketeerJDT"
+      id="com.chookapp.org.BracketeerJDT-feature"
       label="Bracketeer JDT support"
-      version="1.2.0.qualifier"
+      version="1.3.0.qualifier"
       provider-name="Chookapp">
 
    <description url="https://github.com/chookapp/Bracketeer">
@@ -24,7 +24,7 @@ It adds support for the JDT (Java) eclipse tool.
 
    <requires>
       <import plugin="org.eclipse.core.runtime"/>
-      <import plugin="com.chookapp.org.Bracketeer"/>
+      <import plugin="com.chookapp.org.Bracketeer-plugin"/>
       <import plugin="org.eclipse.jface.text"/>
       <import plugin="org.eclipse.ui"/>
       <import plugin="org.eclipse.jdt.core"/>
@@ -35,7 +35,7 @@ It adds support for the JDT (Java) eclipse tool.
          id="com.chookapp.org.BracketeerJDT"
          download-size="0"
          install-size="0"
-         version="1.2.0.qualifier"
+         version="1.3.0.qualifier"
          unpack="false"/>
 
 </feature>

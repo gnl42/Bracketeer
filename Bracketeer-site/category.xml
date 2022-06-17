@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="com.chookapp.org.Bracketeer_1.3.0.qualifier.jar" id="com.chookapp.org.Bracketeer" version="1.3.0.qualifier">
+      <category name="Tools"/>
+   </feature>
+   <feature id="com.chookapp.org.BracketeerJDT-feature"/>
+   <bundle id="com.chookapp.org.BracketeerJDT"/>
+   <category-def name="Tools" label="Bracketeer">
+      <description>
+         Bracketeer
+      </description>
+   </category-def>
+</site>
