@@ -84,7 +84,7 @@ public class BracketeerJdtProcessor extends BracketeerProcessor {
             return;
         }
 
-        final ASTParser astp = ASTParser.newParser(AST.JLS3);
+        final ASTParser astp = ASTParser.newParser(AST.getJLSLatest());
         astp.setSource(_typeRoot);
         astp.setResolveBindings(false);
         final CompilationUnit cu = (CompilationUnit) astp.createAST(null);
