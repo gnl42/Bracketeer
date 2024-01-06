@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-      id="com.chookapp.org.Bracketeer"
+      id="me.glindholm.plugin.bracketeer2.feature"
       label="Bracketeer"
-      version="1.2.0.qualifier"
+      version="2.0.0.qualifier"
       provider-name="Chookapp">
 
    <description url="https://github.com/chookapp/Bracketeer">
@@ -36,10 +36,7 @@ without it.
    </requires>
 
    <plugin
-         id="com.chookapp.org.Bracketeer"
-         download-size="0"
-         install-size="0"
-         version="1.2.0.qualifier"
-         unpack="false"/>
+         id="me.glindholm.plugin.bracketeer2.core"
+         version="0.0.0"/>
 
 </feature>

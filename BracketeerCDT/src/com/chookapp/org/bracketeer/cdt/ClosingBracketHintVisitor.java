@@ -50,68 +50,68 @@ import com.chookapp.org.bracketeer.common.MutableBool;
 
 public class ClosingBracketHintVisitor extends ASTVisitor
 {
-    
+
     class ScopeInfo
     {
         public String _str;
         public int _offset;
         public IASTStatement _statement;
-        
-        public ScopeInfo(String str, int offset, IASTStatement statement)
+
+        public ScopeInfo(final String str, final int offset, final IASTStatement statement)
         {
             _str = str;
             _offset = offset;
             _statement = statement;
-        }        
+        }
     }
 
     public class ScopeTraceException extends Exception
-    {   
+    {
         private static final long serialVersionUID = 6297837237586982280L;
-          
-        public ScopeTraceException(String message)
+
+        public ScopeTraceException(final String message)
         {
             super(message);
         }
     }
 
-    
+
     MutableBool _cancelProcessing;
     IBracketeerProcessingContainer _container;
     IHintConfiguration _hintConf;
     Stack<ScopeInfo> _scopeStack;
-    
-    public ClosingBracketHintVisitor(IBracketeerProcessingContainer container,
-                                     MutableBool cancelProcessing, 
-                                     IHintConfiguration hintConf)
+
+    public ClosingBracketHintVisitor(final IBracketeerProcessingContainer container,
+            final MutableBool cancelProcessing,
+            final IHintConfiguration hintConf)
     {
         _cancelProcessing = cancelProcessing;
         _container = container;
         _hintConf = hintConf;
-        
+
         shouldVisitStatements = true;
         shouldVisitDeclarations = true;
         shouldVisitExpressions = true; // not really visiting expressions, see bug 370637.
-        
-        _scopeStack = new Stack<ClosingBracketHintVisitor.ScopeInfo>();
+
+        _scopeStack = new Stack<>();
     }
-    
+
     @Override
-    public int leave(IASTStatement statement)
+    public int leave(final IASTStatement statement)
     {
         try
         {
-            if( (statement instanceof IASTSwitchStatement) || 
-                    (statement instanceof IASTForStatement) ||
-                    (statement instanceof IASTWhileStatement) ||
-                    (statement instanceof IASTDoStatement) )
+            if( statement instanceof IASTSwitchStatement ||
+                    statement instanceof IASTForStatement ||
+                    statement instanceof IASTWhileStatement ||
+                    statement instanceof IASTDoStatement )
             {
                 ScopeInfo scope;
                 if( statement instanceof IASTSwitchStatement )
                 {
                     scope = _scopeStack.peek();
-                    if((scope._statement instanceof IASTCaseStatement) || 
-                            (scope._statement instanceof IASTDefaultStatement))
+                    if(scope._statement instanceof IASTCaseStatement ||
+                            scope._statement instanceof IASTDefaultStatement)
                     {
                         _scopeStack.pop();
                     }
@@ -123,166 +123,174 @@ public class ClosingBracketHintVisitor extends ASTVisitor
                     if(Activator.DEBUG)
                     {
                         Activator.log("Lost track of scope. Expected:" + scope._statement +  //$NON-NLS-1$
-                                      " but was:" + statement); //$NON-NLS-1$
+                                " but was:" + statement); //$NON-NLS-1$
                     }
                 }
             }
-        }       
-        catch(EmptyStackException e)
+        }
+        catch(final EmptyStackException e)
         {
-            if(Activator.DEBUG)
+            if(Activator.DEBUG) {
                 Activator.log(e);
+            }
         }
 
         return super.leave(statement);
     }
-    
+
     @Override
-    public int visit(IASTStatement statement) 
+    public int visit(final IASTStatement statement)
     {
         try
         {
-            if( statement instanceof IASTIfStatement )        
+            if( statement instanceof IASTIfStatement ) {
                 visitIf((IASTIfStatement) statement);
-            
-            if( statement instanceof IASTSwitchStatement )
+            }
+
+            if( statement instanceof IASTSwitchStatement ) {
                 visitSwitch((IASTSwitchStatement) statement);
-            
-            if( statement instanceof IASTForStatement )
+            }
+
+            if( statement instanceof IASTForStatement ) {
                 visitFor((IASTForStatement) statement);
-            
-            if( statement instanceof IASTWhileStatement )
+            }
+
+            if( statement instanceof IASTWhileStatement ) {
                 visitWhile((IASTWhileStatement) statement);
-            
-            if( statement instanceof IASTDoStatement )
+            }
+
+            if( statement instanceof IASTDoStatement ) {
                 visitDo((IASTDoStatement) statement);
-            
-            if( statement instanceof IASTCaseStatement || statement instanceof IASTDefaultStatement )
+            }
+
+            if( statement instanceof IASTCaseStatement || statement instanceof IASTDefaultStatement ) {
                 visitCase(statement);
-            
-            if( statement instanceof IASTBreakStatement || statement instanceof IASTContinueStatement )
+            }
+
+            if( statement instanceof IASTBreakStatement || statement instanceof IASTContinueStatement ) {
                 visitBreak(statement);
-            
+            }
+
         }
-        catch(BadLocationException e)
+        catch(final BadLocationException e)
         {
             _cancelProcessing.set(true);
         }
-        catch(Exception e)
+        catch(final Exception e)
         {
-            if(!(e instanceof ScopeTraceException || e instanceof EmptyStackException))
+            if((!(e instanceof ScopeTraceException) && !(e instanceof EmptyStackException)) || Activator.DEBUG) {
                 Activator.log(e);
-            else if(Activator.DEBUG)
-                Activator.log(e);
+            }
         }
         return shouldContinue();
     }
 
-    private void visitBreak(IASTStatement statement) throws ScopeTraceException, BadLocationException
+    private void visitBreak(final IASTStatement statement) throws ScopeTraceException, BadLocationException
     {
         if(_scopeStack.isEmpty())
+        {
             throw new ScopeTraceException("break without scope: " + statement); //$NON-NLS-1$
-        
-        ScopeInfo scope = _scopeStack.peek();
-        
+        }
+
+        final ScopeInfo scope = _scopeStack.peek();
+
         String hintType;
-        if( scope._statement instanceof IASTForStatement )
+        if( scope._statement instanceof IASTForStatement ) {
             hintType = "break-for"; //$NON-NLS-1$
-        else if( scope._statement instanceof IASTWhileStatement )
+        } else if( scope._statement instanceof IASTWhileStatement ) {
             hintType = "break-while"; //$NON-NLS-1$
-        else if( scope._statement instanceof IASTDoStatement )
+        } else if( scope._statement instanceof IASTDoStatement ) {
             hintType = "break-do"; //$NON-NLS-1$
-        else if( scope._statement instanceof IASTCaseStatement || scope._statement instanceof IASTDefaultStatement )
+        } else if( scope._statement instanceof IASTCaseStatement || scope._statement instanceof IASTDefaultStatement ) {
             hintType = "break-case"; //$NON-NLS-1$
-        else
+        }
+        else {
             throw new ScopeTraceException("Unexpect scope ("+scope._statement+") on break/continue:" + statement); //$NON-NLS-1$ //$NON-NLS-2$
-        
-        int endLoc = statement.getFileLocation().getNodeOffset() + statement.getFileLocation().getNodeLength() - 1; 
+        }
+
+        final int endLoc = statement.getFileLocation().getNodeOffset() + statement.getFileLocation().getNodeLength() - 1;
         _container.add(new Hint(hintType, scope._offset, endLoc, scope._str));
-        
+
     }
 
-    private void visitCase(IASTStatement statement) throws ScopeTraceException
+    private void visitCase(final IASTStatement statement) throws ScopeTraceException
     {
         /* TODO: specific params: don't show the switch part (only the case argument) */
-        
+
         ScopeInfo scope = _scopeStack.peek();
         if( !(scope._statement instanceof IASTSwitchStatement) )
         {
-            if(!((scope._statement instanceof IASTCaseStatement) ||
-                 (scope._statement instanceof IASTDefaultStatement)) )
+            if((!(scope._statement instanceof IASTCaseStatement) && !(scope._statement instanceof IASTDefaultStatement)) )
             {
                 throw new ScopeTraceException("Lost track of stack (in case), found:" + scope._statement); //$NON-NLS-1$
             }
-            
+
             _scopeStack.pop();
             scope = _scopeStack.peek();
         }
-        
+
         if( !(scope._statement instanceof IASTSwitchStatement) )
         {
             throw new ScopeTraceException("Lost track of stack (in case2), found:" + scope._statement); //$NON-NLS-1$
         }
-        
+
         String hint = ""; //$NON-NLS-1$
         if(statement instanceof IASTCaseStatement)
         {
-            IASTExpression cond = ((IASTCaseStatement)statement).getExpression();
-            if( cond != null )
+            final IASTExpression cond = ((IASTCaseStatement)statement).getExpression();
+            if( cond != null ) {
                 hint = cond.getRawSignature();
+            }
             hint = "case: " + hint; //$NON-NLS-1$
         }
         else // default
         {
             hint = "default"; //$NON-NLS-1$
         }
-        
-        int startLoc = statement.getFileLocation().getNodeOffset();
+
+        final int startLoc = statement.getFileLocation().getNodeOffset();
         _scopeStack.push(new ScopeInfo(scope._str + " - " + hint, startLoc, statement));  //$NON-NLS-1$
     }
 
-    private void visitDo(IASTDoStatement statement)
+    private void visitDo(final IASTDoStatement statement)
     {
-        IASTExpression cond = statement.getCondition();
+        final IASTExpression cond = statement.getCondition();
         String hint = ""; //$NON-NLS-1$
-        if( cond != null )
+        if( cond != null ) {
             hint = cond.getRawSignature();
+        }
         hint = "do_while( " + hint + " )"; //$NON-NLS-1$ //$NON-NLS-2$
-        int startLoc = statement.getFileLocation().getNodeOffset();
+        final int startLoc = statement.getFileLocation().getNodeOffset();
         _scopeStack.push(new ScopeInfo(hint, startLoc, statement));
     }
 
-    private void visitIf(IASTIfStatement statement) throws BadLocationException
+    private void visitIf(final IASTIfStatement statement) throws BadLocationException
     {
         /* TODO: specific params: don't show the if hint if there's an "else if" after it (by checking if the elseClause is an instance of ifstatment) */
-        
+
         String hint = ""; //$NON-NLS-1$
         if( statement.getConditionExpression() != null )
         {
             hint = statement.getConditionExpression().getRawSignature();
-        }
-        else 
+        } else if( statement instanceof ICPPASTIfStatement &&
+                ((ICPPASTIfStatement)statement).getConditionDeclaration() != null )
         {
-            if( (statement instanceof ICPPASTIfStatement) && 
-                    ((ICPPASTIfStatement)statement).getConditionDeclaration() != null )
-            {
-                hint = ((ICPPASTIfStatement)statement).getConditionDeclaration().getRawSignature();
-            }
+            hint = ((ICPPASTIfStatement)statement).getConditionDeclaration().getRawSignature();
         }
-            
-        IASTStatement thenClause = statement.getThenClause();
-        IASTStatement elseClause = statement.getElseClause();
-        
-        boolean showIfHint = (elseClause == null);
+
+        final IASTStatement thenClause = statement.getThenClause();
+        final IASTStatement elseClause = statement.getElseClause();
+
+        boolean showIfHint = elseClause == null;
         int endLoc = -1;
         if( !showIfHint )
         {
-            if (elseClause.getFileLocation().getStartingLineNumber() != 
+            if (elseClause.getFileLocation().getStartingLineNumber() !=
                     thenClause.getFileLocation().getEndingLineNumber() )
             {
                 showIfHint = true;
             }
-            
+
             // if the else looks like this "} else {", then show the hint on the "{"
             if( !showIfHint && !(elseClause instanceof IASTIfStatement) )
             {
@@ -290,196 +298,206 @@ public class ClosingBracketHintVisitor extends ASTVisitor
                 showIfHint = true;
             }
         }
-        
-        if( showIfHint && !(thenClause instanceof IASTCompoundStatement) )
+
+        if( showIfHint && !(thenClause instanceof IASTCompoundStatement) ) {
             showIfHint = false;
-        
+        }
+
         if( showIfHint )
         {
-            IASTFileLocation location = thenClause.getFileLocation();
-            if( endLoc == -1 )
+            final IASTFileLocation location = thenClause.getFileLocation();
+            if( endLoc == -1 ) {
                 endLoc = location.getNodeOffset()+location.getNodeLength()-1;
-            int startLoc = statement.getFileLocation().getNodeOffset();
+            }
+            final int startLoc = statement.getFileLocation().getNodeOffset();
             _container.add(new Hint("if", startLoc, endLoc, "if( "+hint+" )")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-        } 
+        }
 
-        if( elseClause != null && !(elseClause instanceof IASTIfStatement) && 
-                (elseClause instanceof IASTCompoundStatement))
+        if( elseClause != null && !(elseClause instanceof IASTIfStatement) &&
+                elseClause instanceof IASTCompoundStatement)
         {
-            IASTFileLocation location = elseClause.getFileLocation();
+            final IASTFileLocation location = elseClause.getFileLocation();
             endLoc = location.getNodeOffset()+location.getNodeLength()-1;
-            int startLoc = location.getNodeOffset();
+            final int startLoc = location.getNodeOffset();
             _container.add(new Hint("if", startLoc, endLoc, "else_of_if( "+hint+" )")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         }
     }
 
-    private void visitSwitch(IASTSwitchStatement statement) throws BadLocationException
-    {        
+    private void visitSwitch(final IASTSwitchStatement statement) throws BadLocationException
+    {
         String hint = statement.getControllerExpression().getRawSignature();
-        IASTFileLocation location = statement.getBody().getFileLocation();
-        int endLoc = location.getNodeOffset()+location.getNodeLength()-1;
-        int startLoc = statement.getFileLocation().getNodeOffset();
+        final IASTFileLocation location = statement.getBody().getFileLocation();
+        final int endLoc = location.getNodeOffset()+location.getNodeLength()-1;
+        final int startLoc = statement.getFileLocation().getNodeOffset();
         hint = "switch( "+hint+" )"; //$NON-NLS-1$ //$NON-NLS-2$
-        _container.add(new Hint("switch", startLoc, endLoc, hint)); //$NON-NLS-1$ 
+        _container.add(new Hint("switch", startLoc, endLoc, hint)); //$NON-NLS-1$
         _scopeStack.push(new ScopeInfo(hint, startLoc, statement));
     }
 
 
-    private void visitFor(IASTForStatement statement) throws BadLocationException
+    private void visitFor(final IASTForStatement statement) throws BadLocationException
     {
         /* TODO: specific params: show also initializer && increment expressions */
 
-        IASTExpression cond = statement.getConditionExpression();
+        final IASTExpression cond = statement.getConditionExpression();
         String hint = ""; //$NON-NLS-1$
-        if( cond != null )
+        if( cond != null ) {
             hint = cond.getRawSignature();
+        }
         hint = "for( "+hint+" )"; //$NON-NLS-1$ //$NON-NLS-2$
-        int startLoc = statement.getFileLocation().getNodeOffset();
+        final int startLoc = statement.getFileLocation().getNodeOffset();
         _scopeStack.push(new ScopeInfo(hint, startLoc, statement));
-        
-        IASTStatement body = statement.getBody();
+
+        final IASTStatement body = statement.getBody();
         if( body instanceof IASTCompoundStatement)
         {
-            IASTFileLocation location = body.getFileLocation();
-            int endLoc = location.getNodeOffset()+location.getNodeLength()-1;            
-            _container.add(new Hint("for", startLoc, endLoc, hint)); //$NON-NLS-1$ 
+            final IASTFileLocation location = body.getFileLocation();
+            final int endLoc = location.getNodeOffset()+location.getNodeLength()-1;
+            _container.add(new Hint("for", startLoc, endLoc, hint)); //$NON-NLS-1$
         }
     }
-    
-    private void visitWhile(IASTWhileStatement statement) throws BadLocationException
+
+    private void visitWhile(final IASTWhileStatement statement) throws BadLocationException
     {
-        IASTExpression cond = statement.getCondition();        
+        final IASTExpression cond = statement.getCondition();
         String hint = ""; //$NON-NLS-1$
-        if( cond != null )
+        if( cond != null ) {
             hint = cond.getRawSignature();
+        }
         hint = "while( "+hint+" )"; //$NON-NLS-1$ //$NON-NLS-2$
-        int startLoc = statement.getFileLocation().getNodeOffset();
+        final int startLoc = statement.getFileLocation().getNodeOffset();
         _scopeStack.push(new ScopeInfo(hint, startLoc, statement));
-        
-        IASTStatement body = statement.getBody();
+
+        final IASTStatement body = statement.getBody();
         if( body instanceof IASTCompoundStatement)
         {
-            IASTFileLocation location = body.getFileLocation();
-       
-            int endLoc = location.getNodeOffset()+location.getNodeLength()-1;
-            _container.add(new Hint("while", startLoc, endLoc, hint)); //$NON-NLS-1$ 
+            final IASTFileLocation location = body.getFileLocation();
+
+            final int endLoc = location.getNodeOffset()+location.getNodeLength()-1;
+            _container.add(new Hint("while", startLoc, endLoc, hint)); //$NON-NLS-1$
         }
     }
-    
+
     @Override
-    public int visit(IASTDeclaration declaration)
+    public int visit(final IASTDeclaration declaration)
     {
         try
         {
-            if( declaration instanceof IASTFunctionDefinition )
+            if( declaration instanceof IASTFunctionDefinition ) {
                 visitFunc((IASTFunctionDefinition) declaration);
-            
-            if( declaration instanceof IASTSimpleDeclaration)
+            }
+
+            if( declaration instanceof IASTSimpleDeclaration) {
                 visitType((IASTSimpleDeclaration) declaration);
+            }
         }
-        catch (Exception e)
+        catch (final Exception e)
         {
             Activator.log(e);
         }
         return shouldContinue();
-    }  
-    
-    private void visitFunc(IASTFunctionDefinition declaration) throws BadLocationException
+    }
+
+    private void visitFunc(final IASTFunctionDefinition declaration) throws BadLocationException
     {
-        IASTStatement body = declaration.getBody();
-        if(!( body instanceof IASTCompoundStatement) )
+        final IASTStatement body = declaration.getBody();
+        if(!( body instanceof IASTCompoundStatement) ) {
             return;
-        
+        }
+
         // starting a function empties the stack... (which should already be empty on good flow)
         _scopeStack.clear();
-        
-        IASTFileLocation location = body.getFileLocation();
-        int endLoc = location.getNodeOffset()+location.getNodeLength()-1;
 
-        IASTFunctionDeclarator declerator = declaration.getDeclarator();
-        int startLoc = declerator.getFileLocation().getNodeOffset();
-        
-        StringBuffer hint = new StringBuffer();
-        hint.append(declerator.getName().getRawSignature());            
+        final IASTFileLocation location = body.getFileLocation();
+        final int endLoc = location.getNodeOffset()+location.getNodeLength()-1;
+
+        final IASTFunctionDeclarator declerator = declaration.getDeclarator();
+        final int startLoc = declerator.getFileLocation().getNodeOffset();
+
+        final StringBuilder hint = new StringBuilder();
+        hint.append(declerator.getName().getRawSignature());
         /* TODO: specific params: exclude function parameters (show only the name) */
         hint.append("( "); //$NON-NLS-1$
-        IASTNode[] decChildren = declerator.getChildren();
+        final IASTNode[] decChildren = declerator.getChildren();
         boolean firstParam = true;
-        for (int i = 0; i < decChildren.length; i++)
-        {
-            IASTNode node = decChildren[i];
-            if( node instanceof IASTParameterDeclaration)
+        for (final IASTNode node : decChildren) {
+            if( node instanceof final IASTParameterDeclaration param)
             {
-                IASTParameterDeclaration param = (IASTParameterDeclaration) node;
-                if( firstParam )
+                if( firstParam ) {
                     firstParam = false;
-                else
+                }
+                else {
                     hint.append(", "); //$NON-NLS-1$
-                hint.append(param.getDeclarator().getName());                    
+                }
+                hint.append(param.getDeclarator().getName());
             }
         }
         hint.append(" )"); //$NON-NLS-1$
-        
-        _container.add(new Hint("function", startLoc, endLoc, hint.toString())); //$NON-NLS-1$        
+
+        _container.add(new Hint("function", startLoc, endLoc, hint.toString())); //$NON-NLS-1$
     }
-    
-    private void visitType(IASTSimpleDeclaration declaration) throws BadLocationException
+
+    private void visitType(final IASTSimpleDeclaration declaration) throws BadLocationException
     {
         /* TODO: specific params: include type('class' / 'struct') */
-        
-        IASTDeclSpecifier spec = declaration.getDeclSpecifier();
+
+        final IASTDeclSpecifier spec = declaration.getDeclSpecifier();
         if( spec instanceof IASTCompositeTypeSpecifier )
         {
-            String hint = ((IASTCompositeTypeSpecifier)spec).getName().getRawSignature();
-            if( hint.isEmpty() )
+            final String hint = ((IASTCompositeTypeSpecifier)spec).getName().getRawSignature();
+            if( hint.isEmpty() ) {
                 return;
-            
-            IASTFileLocation location = declaration.getFileLocation();
-            int endLoc = location.getNodeOffset()+location.getNodeLength()-1;
-            int startLoc = location.getNodeOffset();
+            }
+
+            final IASTFileLocation location = declaration.getFileLocation();
+            final int endLoc = location.getNodeOffset()+location.getNodeLength()-1;
+            final int startLoc = location.getNodeOffset();
             _container.add(new Hint("type", startLoc, endLoc, hint)); //$NON-NLS-1$
         }
 
         if(spec instanceof ICPPASTNamedTypeSpecifier)
         {
-            IASTName name = ((ICPPASTNamedTypeSpecifier) spec).getName();
-            addBrackets(name);            
+            final IASTName name = ((ICPPASTNamedTypeSpecifier) spec).getName();
+            addBrackets(name);
         }
-        
+
     }
 
-    private void addBrackets(IASTName name) throws BadLocationException
+    private void addBrackets(final IASTName name) throws BadLocationException
     {
         if( name instanceof ICPPASTTemplateId )
         {
-            IASTNode[] args = ((ICPPASTTemplateId) name).getTemplateArguments();
+            final IASTNode[] args = ((ICPPASTTemplateId) name).getTemplateArguments();
             addBrackets(args);
-        } 
+        }
         else if( name instanceof ICPPASTQualifiedName)
         {
-            IASTName[] names = ((ICPPASTQualifiedName) name).getNames();
-            for (IASTName n : names)
+            final IASTName[] names = ((ICPPASTQualifiedName) name).getNames();
+            for (final IASTName n : names) {
                 addBrackets(n);
-        }        
+            }
+        }
     }
 
-    private void addBrackets(IASTNode[] args) throws BadLocationException
+    private void addBrackets(final IASTNode[] args) throws BadLocationException
     {
-        if(args == null || args.length == 0)
+        if(args == null || args.length == 0) {
             return;
-                
-        int startLoc = args[0].getFileLocation().getNodeOffset() - 1;
-        IASTFileLocation endFileLoc = args[args.length-1].getFileLocation();
-        int endLoc = endFileLoc.getNodeOffset() + endFileLoc.getNodeLength();
-        _container.add(new BracketsPair(startLoc, '<', endLoc, '>'));        
+        }
+
+        final int startLoc = args[0].getFileLocation().getNodeOffset() - 1;
+        final IASTFileLocation endFileLoc = args[args.length-1].getFileLocation();
+        final int endLoc = endFileLoc.getNodeOffset() + endFileLoc.getNodeLength();
+        _container.add(new BracketsPair(startLoc, '<', endLoc, '>'));
     }
 
     private int shouldContinue()
     {
-        if( _cancelProcessing.get() )
+        if( _cancelProcessing.get() ) {
             return PROCESS_ABORT;
-        else
+        } else {
             return PROCESS_CONTINUE;
+        }
     }
-    
+
 }
