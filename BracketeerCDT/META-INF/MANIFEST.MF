@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: me.glindholm.plugin.bracketeer2.CDT;singleton:=true
 Bundle-Version: 2.0.0.qualifier
-Bundle-Activator: com.chookapp.org.bracketeer.cdt.Activator
+Bundle-Activator: me.glindholm.plugin.bracketeer2.cdt.Activator
 Bundle-Vendor: %Bundle-Vendor
 Require-Bundle: org.eclipse.core.runtime,
  me.glindholm.plugin.bracketeer2.core,

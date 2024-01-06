@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: me.glindholm.plugin.bracketeer2.core;singleton:=true
 Bundle-Version: 2.0.0.qualifier
-Bundle-Activator: com.chookapp.org.bracketeer.Activator
+Bundle-Activator: me.glindholm.plugin.bracketeer2.Activator
 Bundle-Vendor: %Bundle-Vendor
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
@@ -11,7 +11,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.editors,
  org.eclipse.core.resources
 Bundle-RequiredExecutionEnvironment: JavaSE-17
-Export-Package: com.chookapp.org.bracketeer.common,
- com.chookapp.org.bracketeer.extensionpoint
+Export-Package: me.glindholm.plugin.bracketeer2.common,
+ me.glindholm.plugin.bracketeer2.extensionpoint
 Bundle-ClassPath: .
 Bundle-ActivationPolicy: lazy
