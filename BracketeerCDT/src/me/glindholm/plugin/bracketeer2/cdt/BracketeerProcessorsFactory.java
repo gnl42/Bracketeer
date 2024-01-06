@@ -7,7 +7,7 @@
  *
  * Contributors:
  *    Gil Barash - initial API and implementation
- *    
+ * 
  *******************************************************************************/
 package me.glindholm.plugin.bracketeer2.cdt;
 
@@ -17,21 +17,18 @@ import org.eclipse.ui.IEditorPart;
 import me.glindholm.plugin.bracketeer2.extensionpoint.BracketeerProcessor;
 import me.glindholm.plugin.bracketeer2.extensionpoint.IBracketeerProcessorsFactory;
 
-public class BracketeerProcessorsFactory implements
-		IBracketeerProcessorsFactory 
-{
+public class BracketeerProcessorsFactory implements IBracketeerProcessorsFactory {
 
-	public BracketeerProcessorsFactory() 
-	{
-	}
+    public BracketeerProcessorsFactory() {
+    }
 
-	@Override
-	public BracketeerProcessor createProcessorFor(IEditorPart part, IDocument doc) 
-	{
-		if( part.getClass().getName().equals("org.eclipse.cdt.internal.ui.editor.CEditor") ) //$NON-NLS-1$
-		    return new BracketeerCdtProcessor(part, doc);
-		
-		return null;
-	}
+    @Override
+    public BracketeerProcessor createProcessorFor(final IEditorPart part, final IDocument doc) {
+        if (part.getClass().getName().equals("org.eclipse.cdt.internal.ui.editor.CEditor")) { //$NON-NLS-1$
+            return new BracketeerCdtProcessor(part, doc);
+        }
+
+        return null;
+    }
 
 }

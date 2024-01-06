@@ -16,30 +16,24 @@ import org.eclipse.ui.IEditorPart;
 import me.glindholm.plugin.bracketeer2.extensionpoint.BracketeerProcessor;
 import me.glindholm.plugin.bracketeer2.extensionpoint.IBracketeerProcessorsFactory;
 
-public class BracketeerProcessorsFactory implements IBracketeerProcessorsFactory 
-{
+public class BracketeerProcessorsFactory implements IBracketeerProcessorsFactory {
 
-	public BracketeerProcessorsFactory() 
-	{
-	}
-	
-	@Override
-	public BracketeerProcessor createProcessorFor(IEditorPart part, IDocument doc) 
-	{
-	    try
-	    {
-    		if( part.getClass().getName().equals("org.eclipse.jdt.internal.ui.javaeditor.ClassFileEditor") || //$NON-NLS-1$
-    			part.getClass().getName().equals("org.eclipse.jdt.internal.ui.javaeditor.CompilationUnitEditor") || //$NON-NLS-1$
-    			part.getClass().getSuperclass().getName().equals("org.eclipse.jdt.internal.ui.javaeditor.CompilationUnitEditor") ||  //$NON-NLS-1$
-    			part.getClass().getSuperclass().getName().equals("org.eclipse.jdt.internal.ui.javaeditor.ClassFileEditor") ) //$NON-NLS-1$
-    		{
-    		    return new BracketeerJdtProcessor(part, doc);
-    		}		
-	    } 
-	    catch(Exception e)
-	    {	        
-	    }
-		return null;
-	}
+    public BracketeerProcessorsFactory() {
+    }
+
+    @Override
+    public BracketeerProcessor createProcessorFor(final IEditorPart part, final IDocument doc) {
+        try {
+            if (part.getClass().getName().equals("org.eclipse.jdt.internal.ui.javaeditor.ClassFileEditor") || //$NON-NLS-1$
+                    part.getClass().getName().equals("org.eclipse.jdt.internal.ui.javaeditor.CompilationUnitEditor") || //$NON-NLS-1$
+                    part.getClass().getSuperclass().getName().equals("org.eclipse.jdt.internal.ui.javaeditor.CompilationUnitEditor") || //$NON-NLS-1$
+                    part.getClass().getSuperclass().getName().equals("org.eclipse.jdt.internal.ui.javaeditor.ClassFileEditor")) //$NON-NLS-1$
+            {
+                return new BracketeerJdtProcessor(part, doc);
+            }
+        } catch (final Exception e) {
+        }
+        return null;
+    }
 
 }

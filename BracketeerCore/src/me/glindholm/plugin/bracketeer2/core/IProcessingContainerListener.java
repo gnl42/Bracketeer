@@ -10,9 +10,6 @@
  *******************************************************************************/
 package me.glindholm.plugin.bracketeer2.core;
 
-public interface IProcessingContainerListener
-{
-    void containerUpdated(boolean bracketsPairsTouched,
-                          boolean singleBracketsTouched, 
-                          boolean hintsTouched);
+public interface IProcessingContainerListener {
+    void containerUpdated(boolean bracketsPairsTouched, boolean singleBracketsTouched, boolean hintsTouched);
 }

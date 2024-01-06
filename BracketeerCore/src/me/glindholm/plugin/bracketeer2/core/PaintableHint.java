@@ -24,16 +24,13 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Display;
 
-public class PaintableHint extends PaintableObject
-{
+public class PaintableHint extends PaintableObject {
 
-    private String _txt;
-    private boolean _italic;
+    private final String _txt;
+    private final boolean _italic;
     private boolean _underline;
 
-    public PaintableHint(Position drawPosition, RGB foreground, RGB background, 
-                         boolean italic, String txt)
-    {
+    public PaintableHint(final Position drawPosition, final RGB foreground, final RGB background, final boolean italic, final String txt) {
         super(drawPosition, foreground, background);
         _txt = txt;
         _italic = italic;
@@ -41,110 +38,93 @@ public class PaintableHint extends PaintableObject
     }
 
     @Override
-    public boolean equals(Object obj)
-    {
-        if( !(obj instanceof PaintableHint))
+    public boolean equals(final Object obj) {
+        if (!(obj instanceof final PaintableHint other)) {
             return false;
-        
-        PaintableHint other = (PaintableHint)obj;
-        if( (!_txt.equals(other._txt)) || (_italic != other._italic) )
-        {
+        }
+
+        if (!_txt.equals(other._txt) || _italic != other._italic) {
             return false;
-        }        
-        
+        }
+
         return super.equals(obj);
     }
-    
+
     @Override
-    protected void innerPaint(GC gc, StyledText st, IDocument doc,
-                              IRegion widgetRange, Rectangle rect)
-    {
+    protected void innerPaint(final GC gc, final StyledText st, final IDocument doc, final IRegion widgetRange, final Rectangle rect) {
         Font oldFont = null;
         Font newFont = null;
-        if(_italic)
-        {
-             oldFont = gc.getFont();
-             FontData[] oldDatas = oldFont.getFontData();
-             FontData[] newDatas = new FontData[oldDatas.length];
-             for (int i = 0; i < oldDatas.length; i++)
-             {
-                 FontData oldData = oldDatas[i];
-                 FontData fontData = new FontData(oldData.getName(), 
-                                                  oldData.getHeight(), 
-                                                  SWT.ITALIC);
-                 fontData.setLocale(oldData.getLocale());
-                 newDatas[i] = fontData;
-             }
-             newFont = new Font(Display.getDefault(), newDatas);
-             gc.setFont(newFont); 
+        if (_italic) {
+            oldFont = gc.getFont();
+            final FontData[] oldDatas = oldFont.getFontData();
+            final FontData[] newDatas = new FontData[oldDatas.length];
+            for (int i = 0; i < oldDatas.length; i++) {
+                final FontData oldData = oldDatas[i];
+                final FontData fontData = new FontData(oldData.getName(), oldData.getHeight(), SWT.ITALIC);
+                fontData.setLocale(oldData.getLocale());
+                newDatas[i] = fontData;
+            }
+            newFont = new Font(Display.getDefault(), newDatas);
+            gc.setFont(newFont);
         }
-        
+
         gc.drawText(_txt, rect.x, rect.y, _background == null);
-        if(_underline )
-            gc.drawLine(rect.x - 1, rect.y + rect.height - 1, 
-                        rect.x + rect.width + 1, rect.y + rect.height - 1);
-        
-        if( newFont != null )
-        {
+        if (_underline) {
+            gc.drawLine(rect.x - 1, rect.y + rect.height - 1, rect.x + rect.width + 1, rect.y + rect.height - 1);
+        }
+
+        if (newFont != null) {
             gc.setFont(oldFont);
             newFont.dispose();
         }
     }
 
-    public boolean isOkToShow(IDocument doc) throws BadLocationException
-    {
-        IRegion region = doc.getLineInformationOfOffset(_position.getOffset());
-        int startOffset = _position.getOffset() + 1;
+    public boolean isOkToShow(final IDocument doc) throws BadLocationException {
+        final IRegion region = doc.getLineInformationOfOffset(_position.getOffset());
+        final int startOffset = _position.getOffset() + 1;
         int endOffset = region.getOffset() + region.getLength();
-        
+
 //        // is this the last char in the document?
 //        if( startOffset >= doc.getLength() )
 //            return true;
-        
-        endOffset = Math.min(endOffset, doc.getLength()-1);
-        
+
+        endOffset = Math.min(endOffset, doc.getLength() - 1);
+
         // is the last char in the line?
-        if( startOffset >= endOffset )
+        if (startOffset >= endOffset) {
             return true;
-        
-        String str = doc.get(startOffset, endOffset-startOffset);
-        for (char c : str.toCharArray())
-        {
-            if( c != '\t' && c != ' ' )
+        }
+
+        final String str = doc.get(startOffset, endOffset - startOffset);
+        for (final char c : str.toCharArray()) {
+            if (c != '\t' && c != ' ') {
                 return false;
+            }
         }
         return true;
     }
 
-    public Rectangle getWidgetRect(GC gc, StyledText st, IDocument doc,
-                                   IRegion widgetRange)
-    {
-        try
-        {
-            if( widgetRange == null )
+    public Rectangle getWidgetRect(final GC gc, final StyledText st, final IDocument doc, final IRegion widgetRange) {
+        try {
+            if ((widgetRange == null) || !isOkToShow(doc)) {
                 return null;
-            
-            if( !isOkToShow(doc) )
-                return null;
-            
-            int offset = widgetRange.getOffset();
-            
-            Point p = st.getLocationAtOffset(offset);
+            }
+
+            final int offset = widgetRange.getOffset();
+
+            final Point p = st.getLocationAtOffset(offset);
             p.x += gc.getAdvanceWidth(doc.getChar(_position.getOffset()));
-            
-            Point metrics = gc.textExtent(_txt);
-            Rectangle rect = new Rectangle(p.x, p.y, metrics.x, metrics.y);
+
+            final Point metrics = gc.textExtent(_txt);
+            final Rectangle rect = new Rectangle(p.x, p.y, metrics.x, metrics.y);
             return rect;
-        }
-        catch (BadLocationException e)
-        {
+        } catch (final BadLocationException e) {
         }
         return null;
     }
 
-    public void setUnderline(boolean underline)
-    {
-        _underline = underline;        
+    public void setUnderline(final boolean underline) {
+        _underline = underline;
     }
 
 }

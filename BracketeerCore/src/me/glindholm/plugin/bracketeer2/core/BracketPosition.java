@@ -7,30 +7,26 @@
  *
  * Contributors:
  *    Gil Barash - initial API and implementation
- *    
+ * 
  *******************************************************************************/
 package me.glindholm.plugin.bracketeer2.core;
 
 import org.eclipse.jface.text.Position;
 
-public class BracketPosition
-{
-    private Position _pos;
-    private int _colorCode;
-    
-    public BracketPosition(int offset, int colorCode)
-    {
+public class BracketPosition {
+    private final Position _pos;
+    private final int _colorCode;
+
+    public BracketPosition(final int offset, final int colorCode) {
         _pos = new Position(offset, 1);
         _colorCode = colorCode;
     }
-    
-    public Position getPosition()
-    {
+
+    public Position getPosition() {
         return _pos;
     }
 
-    public int getColorCode()
-    {
+    public int getColorCode() {
         return _colorCode;
     }
 }

@@ -10,7 +10,6 @@
  *******************************************************************************/
 package me.glindholm.plugin.bracketeer2.core;
 
-public interface IActiveProcessorListener
-{
+public interface IActiveProcessorListener {
     void activeProcessorChanged(String processorName);
 }

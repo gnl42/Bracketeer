@@ -12,15 +12,12 @@ package me.glindholm.plugin.bracketeer2.preferences;
 
 import org.eclipse.jface.preference.PreferenceStore;
 
-public class NonPersistantPreferencesStore extends PreferenceStore
-{
-    public NonPersistantPreferencesStore()
-    {
-        super();
+public class NonPersistantPreferencesStore extends PreferenceStore {
+    public NonPersistantPreferencesStore() {
     }
-    
-    public boolean needsSaving()
-    {
+
+    @Override
+    public boolean needsSaving() {
         return false;
     }
 }

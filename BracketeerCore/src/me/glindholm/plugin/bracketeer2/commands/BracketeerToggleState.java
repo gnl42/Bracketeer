@@ -29,98 +29,84 @@ import org.eclipse.ui.services.ISourceProviderService;
 import me.glindholm.plugin.bracketeer2.Activator;
 import me.glindholm.plugin.bracketeer2.preferences.PreferencesConstants;
 
-public class BracketeerToggleState extends State implements 
-    IPropertyChangeListener, IExecutableExtension, ISourceProviderListener
-{
+public class BracketeerToggleState extends State implements IPropertyChangeListener, IExecutableExtension, ISourceProviderListener {
     private String _attrName;
     private String _attrSuffix;
-    private IPreferenceStore _store;
-    
+    private final IPreferenceStore _store;
+
     public final static String STATE_ID = "org.eclipse.ui.commands.toggleState"; //$NON-NLS-1$
-    
-    public BracketeerToggleState()
-    {
+
+    public BracketeerToggleState() {
         _attrName = null;
-        
+
         _store = Activator.getDefault().getPreferenceStore();
         _store.addPropertyChangeListener(this);
-        
-        ISourceProviderService srcService = (ISourceProviderService) PlatformUI.getWorkbench().getService(ISourceProviderService.class);
-        ISourceProvider src = srcService.getSourceProvider(SourceProvider.PLUGIN_NAME);
-        if( src == null )
+
+        final ISourceProviderService srcService = PlatformUI.getWorkbench().getService(ISourceProviderService.class);
+        final ISourceProvider src = srcService.getSourceProvider(SourceProvider.PLUGIN_NAME);
+        if (src == null) {
             Activator.log(Messages.BracketeerToggleState_SrcProviderNotFound);
-        else
+        } else {
             src.addSourceProviderListener(this);
-        
+        }
+
         super.setValue(false);
     }
-    
+
     @Override
-    public void propertyChange(PropertyChangeEvent event)
-    {
-        if( _attrName == null )
+    public void propertyChange(final PropertyChangeEvent event) {
+        if ((_attrName == null) || !event.getProperty().equals(_attrName)) {
             return;
-        
-        if( !event.getProperty().equals(_attrName) )
-            return;
-                
+        }
+
         setValue(_store.getBoolean(_attrName));
     }
 
     @Override
-    public void setValue(Object value)
-    {
-        if (!(value instanceof Boolean)) 
-        {
-            throw new IllegalArgumentException(
-                    "ToggleState takes a Boolean as a value"); //$NON-NLS-1$
+    public void setValue(final Object value) {
+        if (!(value instanceof Boolean)) {
+            throw new IllegalArgumentException("ToggleState takes a Boolean as a value"); //$NON-NLS-1$
         }
-        
-        if( _attrName == null )
+
+        if (_attrName == null) {
             throw new IllegalStateException(Messages.BracketeerToggleState_ErrAttrName);
-        
+        }
+
         _store.setValue(_attrName, (Boolean) value);
-        
+
         super.setValue(value);
     }
 
     @Override
-    public void setInitializationData(IConfigurationElement config,
-                                      String propertyName, Object data) throws CoreException
-    {
-        if( data == null || !(data instanceof String))
+    public void setInitializationData(final IConfigurationElement config, final String propertyName, final Object data) throws CoreException {
+        if (data == null || !(data instanceof String)) {
             throw new IllegalArgumentException(Messages.BracketeerToggleState_ErrAttrSuffix);
-        
+        }
+
         _attrSuffix = (String) data;
-    }  
+    }
 
     @SuppressWarnings("rawtypes")
     @Override
-    public void sourceChanged(int sourcePriority, Map sourceValuesByName)
-    {
-        Set set = sourceValuesByName.entrySet();
-        for (Iterator it = set.iterator(); it.hasNext();)
-        {
+    public void sourceChanged(final int sourcePriority, final Map sourceValuesByName) {
+        final Set set = sourceValuesByName.entrySet();
+        for (final Iterator it = set.iterator(); it.hasNext();) {
             @SuppressWarnings("unchecked")
-            Map.Entry<String, Object> entry = (Map.Entry<String, Object>) it.next();
+            final Map.Entry<String, Object> entry = (Map.Entry<String, Object>) it.next();
             sourceChanged(sourcePriority, entry.getKey(), entry.getValue());
         }
     }
 
     @Override
-    public void sourceChanged(int sourcePriority, String sourceName,
-                              Object sourceValue)
-    {
-        if( !sourceName.equals(SourceProvider.PLUGIN_NAME) )
+    public void sourceChanged(final int sourcePriority, final String sourceName, final Object sourceValue) {
+        if (!sourceName.equals(SourceProvider.PLUGIN_NAME)) {
             return;
-        
-        String processorName = (String) sourceValue;
-        if( processorName == null || processorName.isEmpty())
-        {
-            _attrName = null;
         }
-        else
-        {
+
+        final String processorName = (String) sourceValue;
+        if (processorName == null || processorName.isEmpty()) {
+            _attrName = null;
+        } else {
             _attrName = PreferencesConstants.preferencePath(processorName) + _attrSuffix;
             super.setValue(_store.getBoolean(_attrName));
         }

@@ -12,25 +12,20 @@ package me.glindholm.plugin.bracketeer2.core;
 
 import me.glindholm.plugin.bracketeer2.extensionpoint.BracketeerProcessor;
 
-public class BracketeerProcessorInfo
-{
-    private BracketeerProcessor _processor;
-    private ProcessorConfiguration _configuration;
-    
-    public BracketeerProcessorInfo(BracketeerProcessor processor,
-                                   ProcessorConfiguration configuration)
-    {
+public class BracketeerProcessorInfo {
+    private final BracketeerProcessor _processor;
+    private final ProcessorConfiguration _configuration;
+
+    public BracketeerProcessorInfo(final BracketeerProcessor processor, final ProcessorConfiguration configuration) {
         _processor = processor;
         _configuration = configuration;
     }
-    
-    public BracketeerProcessor getProcessor()
-    {
+
+    public BracketeerProcessor getProcessor() {
         return _processor;
     }
 
-    public ProcessorConfiguration getConfiguration()
-    {
+    public ProcessorConfiguration getConfiguration() {
         return _configuration;
-    }	    
+    }
 }

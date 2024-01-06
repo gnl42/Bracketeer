@@ -23,87 +23,77 @@ import org.eclipse.wb.swt.FieldLayoutPreferencePage;
 
 import me.glindholm.plugin.bracketeer2.Activator;
 
-public abstract class ChangingFieldsPrefPage extends FieldLayoutPreferencePage                                              
-{
+public abstract class ChangingFieldsPrefPage extends FieldLayoutPreferencePage {
     protected ArrayList<String> _prefNames;
-    private IPreferenceStore _tempPrefs;
-    private IPreferenceStore _realPrefs;
-    
-    protected ChangingFieldsPrefPage()
-    {
-        _prefNames = new ArrayList<String>();
+    private final IPreferenceStore _tempPrefs;
+    private final IPreferenceStore _realPrefs;
+
+    protected ChangingFieldsPrefPage() {
+        _prefNames = new ArrayList<>();
         _tempPrefs = new NonPersistantPreferencesStore();
         // If we want to re-enable design mode, we should comment out this line
         _realPrefs = Activator.getDefault().getPreferenceStore();
         setPreferenceStore(_tempPrefs);
     }
-    
+
     @Override
-    protected void addField(FieldEditor editor)
-    {
+    protected void addField(final FieldEditor editor) {
         super.addField(editor);
         _prefNames.add(editor.getPreferenceName());
     }
-    
+
     @Override
-    protected void initialize()
-    {
-        for(String attr : _prefNames)
-        {
+    protected void initialize() {
+        for (final String attr : _prefNames) {
             _tempPrefs.setDefault(attr, _realPrefs.getDefaultString(attr));
             _tempPrefs.setValue(attr, _realPrefs.getString(attr));
         }
-        
+
         super.initialize();
     }
-    
+
     @Override
-    public boolean performOk()
-    {
+    public boolean performOk() {
         super.performOk();
-        
-        for(String attr : _prefNames)
-        {
+
+        for (final String attr : _prefNames) {
             _realPrefs.setValue(attr, _tempPrefs.getString(attr));
         }
 
-        if (_realPrefs.needsSaving()
-                && _realPrefs instanceof IPersistentPreferenceStore) {
+        if (_realPrefs.needsSaving() && _realPrefs instanceof IPersistentPreferenceStore) {
             try {
                 ((IPersistentPreferenceStore) _realPrefs).save();
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 Activator.log(e);
             }
         }
 
         return true;
     }
-    
+
     @Override
-    protected void performDefaults()
-    {        
+    protected void performDefaults() {
         super.performDefaults();
-        for(String attr : _prefNames)
-        {
+        for (final String attr : _prefNames) {
             _tempPrefs.setValue(attr, _realPrefs.getDefaultString(attr));
         }
         updateAll();
     }
-    
-    protected void setEnable(Composite comp, boolean enable)
-    {
-        Control[] controls = comp.getChildren();
-        if( controls == null )
+
+    protected void setEnable(final Composite comp, final boolean enable) {
+        final Control[] controls = comp.getChildren();
+        if (controls == null) {
             return;
-        
-        for (Control c : controls)
-        {
-            if( c instanceof Composite && !(c instanceof Spinner))
-                setEnable((Composite)c, enable);
-            else
+        }
+
+        for (final Control c : controls) {
+            if (c instanceof Composite && !(c instanceof Spinner)) {
+                setEnable((Composite) c, enable);
+            } else {
                 c.setEnabled(enable);
+            }
         }
     }
-    
+
     protected abstract void updateAll();
 }

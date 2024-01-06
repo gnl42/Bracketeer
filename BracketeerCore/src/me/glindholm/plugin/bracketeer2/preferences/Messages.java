@@ -2,8 +2,7 @@ package me.glindholm.plugin.bracketeer2.preferences;
 
 import org.eclipse.osgi.util.NLS;
 
-public class Messages extends NLS
-{
+public class Messages extends NLS {
     private static final String BUNDLE_NAME = "me.glindholm.plugin.bracketeer2.preferences.messages"; //$NON-NLS-1$
     public static String HighlightingBracketsPrefPage_BgColor;
     public static String HighlightingBracketsPrefPage_BrktHighlighting;
@@ -65,13 +64,11 @@ public class Messages extends NLS
     public static String HintsPrefPage_HintHoverMaxLen;
     public static String HintsPrefPage_grpHintsConfiguration_text;
     public static String HintsPrefPage_OverrideMaxLength;
-    static
-    {
+    static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, Messages.class);
     }
 
-    private Messages()
-    {
+    private Messages() {
     }
 }

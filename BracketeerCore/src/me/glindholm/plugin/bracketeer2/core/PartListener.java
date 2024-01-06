@@ -14,7 +14,6 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -39,364 +38,316 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import me.glindholm.plugin.bracketeer2.Activator;
 import me.glindholm.plugin.bracketeer2.commands.SourceProvider;
 
-public class PartListener implements IWindowListener, IPartListener2
-{
+public class PartListener implements IWindowListener, IPartListener2 {
     private static PartListener sInstance = new PartListener();
-    private Collection<IWorkbenchWindow> fWindows= new HashSet<IWorkbenchWindow>();
-    private HashMap<IWorkbenchPart, BracketsHighlighter> _activeMap;
-    private ProcessorsRegistry _processorsRegistry;
-    private List<IActiveProcessorListener> m_listeners;
-    
-    PartListener()
-    {
-        _activeMap = new HashMap<IWorkbenchPart, BracketsHighlighter>();
-        m_listeners = new LinkedList<IActiveProcessorListener>();
-        _processorsRegistry = new ProcessorsRegistry();        
+    private final Collection<IWorkbenchWindow> fWindows = new HashSet<>();
+    private final HashMap<IWorkbenchPart, BracketsHighlighter> _activeMap;
+    private final ProcessorsRegistry _processorsRegistry;
+    private final List<IActiveProcessorListener> m_listeners;
+
+    PartListener() {
+        _activeMap = new HashMap<>();
+        m_listeners = new LinkedList<>();
+        _processorsRegistry = new ProcessorsRegistry();
     }
-    
-    public static PartListener getInstance()
-    {
+
+    public static PartListener getInstance() {
         return sInstance;
-    }  
-    
-    public void install() 
-    {
-        IWorkbench workbench = PlatformUI.getWorkbench();
-        if (workbench == null)
-        {
+    }
+
+    public void install() {
+        final IWorkbench workbench = PlatformUI.getWorkbench();
+        if (workbench == null) {
             Activator.log(Messages.PartListener_ErrWorkbanch);
             return;
         }
 
-        ISourceProviderService srcService = (ISourceProviderService) workbench.getService(ISourceProviderService.class);
-        ISourceProvider src = srcService.getSourceProvider(SourceProvider.PLUGIN_NAME);
+        final ISourceProviderService srcService = workbench.getService(ISourceProviderService.class);
+        final ISourceProvider src = srcService.getSourceProvider(SourceProvider.PLUGIN_NAME);
         m_listeners.add((IActiveProcessorListener) src);
 
         // listen for new windows
         workbench.addWindowListener(this);
-        IWorkbenchWindow[] wnds= workbench.getWorkbenchWindows();
-        for (int i = 0; i < wnds.length; i++) 
-        {
-            IWorkbenchWindow window = wnds[i];
+        final IWorkbenchWindow[] wnds = workbench.getWorkbenchWindows();
+        for (final IWorkbenchWindow window : wnds) {
             register(window);
         }
         // register open windows
-        //            IWorkbenchWindow ww= PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-        //            if (ww != null) {
-        //                IWorkbenchPage activePage = ww.getActivePage();
-        //                if (activePage != null) {
-        //                    IWorkbenchPartReference part= activePage.getActivePartReference();
-        //                    if (part != null) {
-        //                        partActivated(part);
-        //                    }
-        //                }
-        //            }
+        // IWorkbenchWindow ww= PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+        // if (ww != null) {
+        // IWorkbenchPage activePage = ww.getActivePage();
+        // if (activePage != null) {
+        // IWorkbenchPartReference part= activePage.getActivePartReference();
+        // if (part != null) {
+        // partActivated(part);
+        // }
+        // }
+        // }
 
     }
 
-    public void uninstall() 
-    {
-        for (Iterator<IWorkbenchWindow> iterator = fWindows.iterator(); iterator.hasNext();) 
-        {
-            IWorkbenchWindow window = iterator.next();
+    public void uninstall() {
+        for (final IWorkbenchWindow window : fWindows) {
             unregister(window);
-        }      
+        }
     }
 
-    private void register(IWorkbenchWindow wnd) 
-    {
+    private void register(final IWorkbenchWindow wnd) {
         wnd.getPartService().addPartListener(this);
         fWindows.add(wnd);
-        IWorkbenchPage[] pages = wnd.getPages();
-        for (IWorkbenchPage page : pages)
-        {
-            IEditorReference[] editorRefs = page.getEditorReferences();
-            for (IEditorReference editorRef : editorRefs)
-            {
+        final IWorkbenchPage[] pages = wnd.getPages();
+        for (final IWorkbenchPage page : pages) {
+            final IEditorReference[] editorRefs = page.getEditorReferences();
+            for (final IEditorReference editorRef : editorRefs) {
                 partActivated(editorRef);
             }
         }
-        
-        IWorkbenchPage page = wnd.getActivePage();
-        if( page != null )
-        {
+
+        final IWorkbenchPage page = wnd.getActivePage();
+        if (page != null) {
             activated(page.getActivePartReference());
         }
     }
-    
+
     /*
-     * This function is expected to be closed when a window is closed (including 
-     *  when eclipse closes), so the parts have already been closed.
-     * This is because I don't dispose the higlighers in this function... 
+     * This function is expected to be closed when a window is closed (including when eclipse closes),
+     * so the parts have already been closed. This is because I don't dispose the higlighers in this
+     * function...
      */
-    private void unregister(IWorkbenchWindow wnd) 
-    {
+    private void unregister(final IWorkbenchWindow wnd) {
         wnd.getPartService().removePartListener(this);
         fWindows.remove(wnd);
     }
-    
-    
+
     /* window events */
 
     @Override
-    public void windowActivated(IWorkbenchWindow window)
-    {
+    public void windowActivated(final IWorkbenchWindow window) {
     }
 
     @Override
-    public void windowDeactivated(IWorkbenchWindow window)
-    {
+    public void windowDeactivated(final IWorkbenchWindow window) {
     }
 
     @Override
-    public void windowOpened(IWorkbenchWindow window) 
-    {
+    public void windowOpened(final IWorkbenchWindow window) {
         register(window);
     }
 
     @Override
-    public void windowClosed(IWorkbenchWindow window) 
-    {
+    public void windowClosed(final IWorkbenchWindow window) {
         unregister(window);
     }
-    
-    
+
     /* part events */
-    
-    @Override
-    public void partActivated(IWorkbenchPartReference partRef)
-    {
-        created(partRef);
-        activated(partRef);
-    }   
 
     @Override
-    public void partBroughtToTop(IWorkbenchPartReference partRef)
-    {
+    public void partActivated(final IWorkbenchPartReference partRef) {
+        created(partRef);
+        activated(partRef);
     }
 
     @Override
-    public void partClosed(IWorkbenchPartReference partRef)
-    {
+    public void partBroughtToTop(final IWorkbenchPartReference partRef) {
+    }
+
+    @Override
+    public void partClosed(final IWorkbenchPartReference partRef) {
         destroyed(partRef);
     }
 
     @Override
-    public void partDeactivated(IWorkbenchPartReference partRef)
-    {
+    public void partDeactivated(final IWorkbenchPartReference partRef) {
         deactivated(partRef);
     }
 
     @Override
-    public void partOpened(IWorkbenchPartReference partRef)
-    {
+    public void partOpened(final IWorkbenchPartReference partRef) {
         created(partRef);
     }
 
     @Override
-    public void partHidden(IWorkbenchPartReference partRef)
-    {
+    public void partHidden(final IWorkbenchPartReference partRef) {
     }
 
     @Override
-    public void partVisible(IWorkbenchPartReference partRef)
-    {
+    public void partVisible(final IWorkbenchPartReference partRef) {
     }
 
     @Override
-    public void partInputChanged(IWorkbenchPartReference partRef)
-    {
+    public void partInputChanged(final IWorkbenchPartReference partRef) {
         destroyed(partRef);
         created(partRef);
     }
 
-    private void created(IWorkbenchPartReference partRef) 
-    {
-        IWorkbenchPart part= partRef.getPart(false);
+    private void created(final IWorkbenchPartReference partRef) {
+        final IWorkbenchPart part = partRef.getPart(false);
         try {
-            if (!(part instanceof IEditorPart))
+            if (!(part instanceof final IEditorPart editorPart)) {
                 return;
-            
-            IEditorPart editorPart = (IEditorPart) part;
-            ITextViewer viewer = callGetSourceViewer(editorPart);
-            if (viewer == null) 
+            }
+
+            final ITextViewer viewer = callGetSourceViewer(editorPart);
+            if (viewer == null) {
                 return;
+            }
 
             hook(editorPart, viewer);
-        } catch (Exception err) {
+        } catch (final Exception err) {
             err.printStackTrace();
         }
     }
-    
-    private void destroyed(IWorkbenchPartReference partRef) 
-    {
-        IWorkbenchPart part= partRef.getPart(false);
+
+    private void destroyed(final IWorkbenchPartReference partRef) {
+        final IWorkbenchPart part = partRef.getPart(false);
         try {
-            if (!(part instanceof IEditorPart))
-                return;            
+            if (!(part instanceof IEditorPart)) {
+                return;
+            }
 
             unhook(part);
-        } catch (Exception err) {
+        } catch (final Exception err) {
             err.printStackTrace();
         }
     }
-    
-    private void activated(IWorkbenchPartReference partRef)
-    {
-        if( partRef == null )
-        {
+
+    private void activated(final IWorkbenchPartReference partRef) {
+        if (partRef == null) {
             deactivated(partRef);
             return;
         }
-        IWorkbenchPart part = partRef.getPart(false);
-        if( part == null )
-        {
+        final IWorkbenchPart part = partRef.getPart(false);
+        if (part == null) {
             deactivated(partRef);
             return;
         }
 
         BracketsHighlighter bracketsHighlighter;
-        synchronized (_activeMap) 
-        { 
-            bracketsHighlighter = _activeMap.get(part); 
+        synchronized (_activeMap) {
+            bracketsHighlighter = _activeMap.get(part);
         }
-        if( bracketsHighlighter == null )
-        {
+        if (bracketsHighlighter == null) {
             deactivated(partRef);
             return;
         }
-        
-        String name = bracketsHighlighter.getConfiguration().getName();
 
-        if( Activator.DEBUG )
+        final String name = bracketsHighlighter.getConfiguration().getName();
+
+        if (Activator.DEBUG) {
             Activator.trace("PluginName: " + name); //$NON-NLS-1$
-        for (IActiveProcessorListener listener : m_listeners)
-        {
+        }
+        for (final IActiveProcessorListener listener : m_listeners) {
             listener.activeProcessorChanged(name);
         }
     }
-    
-    private void deactivated(IWorkbenchPartReference partRef)
-    {
-        for (IActiveProcessorListener listener : m_listeners)
-        {
+
+    private void deactivated(final IWorkbenchPartReference partRef) {
+        for (final IActiveProcessorListener listener : m_listeners) {
             listener.activeProcessorChanged(null);
-        }   
-    }
-    
-    private void hook(final IEditorPart part, final ITextViewer textViewer) 
-    {
-        if (textViewer == null) 
-            return;
-        
-        BracketsHighlighter oldBracketsHighlighter;
-        synchronized (_activeMap) 
-        { 
-            oldBracketsHighlighter = _activeMap.get(part); 
         }
-        
-        if (oldBracketsHighlighter != null )
-        {
-            if( oldBracketsHighlighter.getTextViewer() != textViewer )
-            {
+    }
+
+    private void hook(final IEditorPart part, final ITextViewer textViewer) {
+        if (textViewer == null) {
+            return;
+        }
+
+        BracketsHighlighter oldBracketsHighlighter;
+        synchronized (_activeMap) {
+            oldBracketsHighlighter = _activeMap.get(part);
+        }
+
+        if (oldBracketsHighlighter != null) {
+            if (oldBracketsHighlighter.getTextViewer() != textViewer) {
                 Activator.log("Part viewer changed"); //$NON-NLS-1$
                 unhook(part);
-            }
-            else
-            {
+            } else {
                 // this part is already registered fine...
                 return;
             }
         }
 
-        IDocument doc = getPartDocument(part);
-        if( doc == null )
+        final IDocument doc = getPartDocument(part);
+        if (doc == null) {
             return;
-        
+        }
+
         BracketeerProcessorInfo processor = null;
-        try 
-        {
+        try {
             processor = _processorsRegistry.findProcessorFor(part, doc);
-        } 
-        catch (RuntimeException e)
-        {
+        } catch (final RuntimeException e) {
             Activator.log(e);
             return;
         }
-        
-        if( processor == null )
+
+        if (processor == null) {
             return;
-        
-        BracketsHighlighter bracketsHighlighter = new BracketsHighlighter(); 
-        bracketsHighlighter.Init(processor.getProcessor(), 
-                                 part, doc, textViewer,
-                                 processor.getConfiguration());
-        synchronized (_activeMap) 
-        {                 
+        }
+
+        final BracketsHighlighter bracketsHighlighter = new BracketsHighlighter();
+        bracketsHighlighter.Init(processor.getProcessor(), part, doc, textViewer, processor.getConfiguration());
+        synchronized (_activeMap) {
             _activeMap.put(part, bracketsHighlighter);
-            
-            if( Activator.DEBUG )
+
+            if (Activator.DEBUG) {
                 Activator.trace(String.format("Parts active = %1$d", _activeMap.size())); //$NON-NLS-1$
+            }
         }
     }
-    
-    private void unhook(final IWorkbenchPart part) 
-    {
-        synchronized (_activeMap) 
-        {
-            BracketsHighlighter oldBracketsHighlighter = _activeMap.get(part);
-            if (oldBracketsHighlighter == null)
+
+    private void unhook(final IWorkbenchPart part) {
+        synchronized (_activeMap) {
+            final BracketsHighlighter oldBracketsHighlighter = _activeMap.get(part);
+            if (oldBracketsHighlighter == null) {
                 return;
-     
+            }
+
             oldBracketsHighlighter.dispose();
-            
+
             _activeMap.remove(part);
-            
-            if( Activator.DEBUG )
+
+            if (Activator.DEBUG) {
                 Activator.trace(String.format("Parts active = %1$d", _activeMap.size())); //$NON-NLS-1$
+            }
         }
     }
-    
-    private static IDocument getPartDocument(IEditorPart part)
-    {
-         ITextEditor editor = (ITextEditor) part.getAdapter(ITextEditor.class);
-         IDocument document = null;
-         if (editor != null) {
-           IDocumentProvider provider = editor.getDocumentProvider();
-           if( provider != null )
-               document = provider.getDocument(editor.getEditorInput());
-         }
-         return document;
+
+    private static IDocument getPartDocument(final IEditorPart part) {
+        final ITextEditor editor = part.getAdapter(ITextEditor.class);
+        IDocument document = null;
+        if (editor != null) {
+            final IDocumentProvider provider = editor.getDocumentProvider();
+            if (provider != null) {
+                document = provider.getDocument(editor.getEditorInput());
+            }
+        }
+        return document;
     }
-    
-    
+
     /**
-     * Calls AbstractTextEditor.getSourceViewer() through reflection, as that method is normally protected (for some
-     * ungodly reason).
+     * Calls AbstractTextEditor.getSourceViewer() through reflection, as that method is normally
+     * protected (for some ungodly reason).
      * 
      * @param AbstractTextEditor to run reflection on
      */
-    private static ITextViewer callGetSourceViewer(IEditorPart editor) 
-    {
-        if( editor == null || !(editor instanceof AbstractTextEditor) )
+    private static ITextViewer callGetSourceViewer(final IEditorPart editor) {
+        if (editor == null || !(editor instanceof AbstractTextEditor)) {
             return null;
+        }
 
-        try 
-        {            
-            Method method = AbstractTextEditor.class.getDeclaredMethod("getSourceViewer"); //$NON-NLS-1$
+        try {
+            final Method method = AbstractTextEditor.class.getDeclaredMethod("getSourceViewer"); //$NON-NLS-1$
             method.setAccessible(true);
 
             return (ITextViewer) method.invoke(editor);
-        } 
-        catch (Exception e) 
-        {
+        } catch (final Exception e) {
             Activator.log(e);
         }
-        
+
         /*
          * StyledText text = (StyledText) editor.getAdapter(Control.class);
          */
-        
+
         return null;
     }
 

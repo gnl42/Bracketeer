@@ -10,7 +10,6 @@
  *******************************************************************************/
 package me.glindholm.plugin.bracketeer2.core;
 
-public interface IProcessorConfigurationListener
-{
+public interface IProcessorConfigurationListener {
     void configurationUpdated();
 }

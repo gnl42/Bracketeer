@@ -19,53 +19,57 @@ import org.osgi.framework.BundleContext;
 public class Activator implements BundleActivator {
 
     // The plug-in ID
-    public static final String PLUGIN_ID = "com.chookapp.org.Braketeer.JDT"; //$NON-NLS-1$
+    public static final String PLUGIN_ID = "me.glindholm.plugin.bracketeer2.Braketeer.JDT"; //$NON-NLS-1$
 
     public static final boolean DEBUG = false;
-    
-	private static BundleContext context;
 
-	static BundleContext getContext() {
-		return context;
-	}
+    private static BundleContext context;
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.osgi.framework.BundleActivator#start(org.osgi.framework.BundleContext)
-	 */
-	public void start(BundleContext bundleContext) throws Exception {
-		Activator.context = bundleContext;
-	}
+    static BundleContext getContext() {
+        return context;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.osgi.framework.BundleActivator#stop(org.osgi.framework.BundleContext)
-	 */
-	public void stop(BundleContext bundleContext) throws Exception {
-		Activator.context = null;
-	}
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.osgi.framework.BundleActivator#start(org.osgi.framework.BundleContext)
+     */
+    @Override
+    public void start(final BundleContext bundleContext) throws Exception {
+        Activator.context = bundleContext;
+    }
 
-	/**
-	 * @param e
-	 */
-    public static void log(Throwable e) {
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.osgi.framework.BundleActivator#stop(org.osgi.framework.BundleContext)
+     */
+    @Override
+    public void stop(final BundleContext bundleContext) throws Exception {
+        Activator.context = null;
+    }
+
+    /**
+     * @param e
+     */
+    public static void log(final Throwable e) {
         Platform.getLog(context.getBundle()).log(getStatus(e));
     }
 
-    public static void log(String message) {
-        Platform.getLog(context.getBundle()).log(new Status(Status.ERROR, PLUGIN_ID, message));
+    public static void log(final String message) {
+        Platform.getLog(context.getBundle()).log(new Status(IStatus.ERROR, PLUGIN_ID, message));
     }
-    
-    public static void trace(String message) {
+
+    public static void trace(final String message) {
         System.out.println(message);
     }
-    
+
     /**
      * @param e
      * @return
      */
-    public static IStatus getStatus(Throwable e) {
-        return new Status(Status.WARNING, PLUGIN_ID, e.getLocalizedMessage(), e);
-    }       
+    public static IStatus getStatus(final Throwable e) {
+        return new Status(IStatus.WARNING, PLUGIN_ID, e.getLocalizedMessage(), e);
+    }
 
 }

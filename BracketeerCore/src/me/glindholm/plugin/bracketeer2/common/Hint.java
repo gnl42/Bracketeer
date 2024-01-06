@@ -12,79 +12,68 @@ package me.glindholm.plugin.bracketeer2.common;
 
 import org.eclipse.jface.text.Position;
 
-public class Hint
-{
+public class Hint {
     private String _str;
-    private String _type;
-    
-    private Position _originPosition;
-    private Position _hintPosition;
-    
-    public Hint(String type, int originOffset, int hintOffset, String txt)
-    {
+    private final String _type;
+
+    private final Position _originPosition;
+    private final Position _hintPosition;
+
+    public Hint(final String type, final int originOffset, final int hintOffset, final String txt) {
         _originPosition = new Position(originOffset, 1);
         _hintPosition = new Position(hintOffset, 1);
         _str = txt.replaceAll("\\s*[\r|\n]+\\s*", " "); //$NON-NLS-1$ //$NON-NLS-2$
         _type = type;
     }
-    
-    public String getTxt()
-    {
+
+    public String getTxt() {
         return _str;
     }
-    
-    public String getType()
-    {
+
+    public String getType() {
         return _type;
     }
-    
-    public Position getHintPosition()
-    {
-        if (!_hintPosition.isDeleted && _hintPosition.length > 0)
+
+    public Position getHintPosition() {
+        if (!_hintPosition.isDeleted && _hintPosition.length > 0) {
             return _hintPosition;
-        else
+        } else {
             return null;
+        }
     }
-    
-    public Position getHintPositionRaw()
-    {
+
+    public Position getHintPositionRaw() {
         return _hintPosition;
     }
-    
-    public Position getOriginPosition()
-    {
-        if (!_originPosition.isDeleted && _originPosition.length > 0)
+
+    public Position getOriginPosition() {
+        if (!_originPosition.isDeleted && _originPosition.length > 0) {
             return _originPosition;
-        else
+        } else {
             return null;
+        }
     }
-    
-    public Position getOriginPositionRaw()
-    {
+
+    public Position getOriginPositionRaw() {
         return _originPosition;
     }
 
-    public void setTxt(String str)
-    {
+    public void setTxt(final String str) {
         _str = str;
     }
 
-    public boolean hasDeletedPosition()
-    {        
-        return ((getHintPosition() == null) || (getOriginPosition() == null));
+    public boolean hasDeletedPosition() {
+        return getHintPosition() == null || getOriginPosition() == null;
     }
-    
+
     @Override
-    public boolean equals(Object obj)
-    {
-        if( !(obj instanceof Hint) )
+    public boolean equals(final Object obj) {
+        if (!(obj instanceof final Hint other)) {
             return false;
-            
-        Hint other = (Hint) obj;
-        return _str.equals(other._str) &&
-                _type.equals(other._type) &&
-                _originPosition.equals(other._originPosition) &&
-                _hintPosition.equals(other._hintPosition);
+        }
+
+        return _str.equals(other._str) && _type.equals(other._type) && _originPosition.equals(other._originPosition)
+                && _hintPosition.equals(other._hintPosition);
     }
-    
+
 }

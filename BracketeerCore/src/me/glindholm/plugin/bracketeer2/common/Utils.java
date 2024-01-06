@@ -7,20 +7,19 @@
  *
  * Contributors:
  *    Gil Barash - initial API and implementation
- *    
+ * 
  * Thanks to:
- *    emil.crumhorn@gmail.com - Some of the code was copied from the 
- *    "eclipsemissingfeatrues" plugin. 
+ *    emil.crumhorn@gmail.com - Some of the code was copied from the
+ *    "eclipsemissingfeatrues" plugin.
  *******************************************************************************/
 
 package me.glindholm.plugin.bracketeer2.common;
 
 public class Utils {
-	
+
     private static final String _openingBrackets = "([{<"; //$NON-NLS-1$
 
-    public static boolean isOpenningBracket(char prevChar)
-    {
+    public static boolean isOpenningBracket(final char prevChar) {
         return _openingBrackets.indexOf(prevChar) != -1;
     }
 

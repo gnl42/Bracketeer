@@ -31,163 +31,143 @@ import me.glindholm.plugin.bracketeer2.common.Hint;
 import me.glindholm.plugin.bracketeer2.common.IBracketeerProcessingContainer;
 import me.glindholm.plugin.bracketeer2.common.SingleBracket;
 
-public class BracketeerProcessingContainer implements IDisposable, IBracketeerProcessingContainer
-{
-    private class ObjectContainer<T>
-    {
-        private T _object;
+public class BracketeerProcessingContainer implements IDisposable, IBracketeerProcessingContainer {
+    private class ObjectContainer<T> {
+        private final T _object;
         private boolean _toDelete;
-        
-        public ObjectContainer(T obj)
-        {
+
+        public ObjectContainer(final T obj) {
             _object = obj;
         }
-        
-        public T getObject()
-        {
+
+        public T getObject() {
             return _object;
         }
-        
-        public boolean isToDelete()
-        {
+
+        public boolean isToDelete() {
             return _toDelete;
         }
 
-        public void setToDelete(boolean toDelete)
-        {
+        public void setToDelete(final boolean toDelete) {
             _toDelete = toDelete;
         }
-        
+
         @Override
-        public boolean equals(Object other)
-        {
-            if( other == null )
+        public boolean equals(final Object other) {
+            if (other == null) {
                 return false;
-            
-            if( other instanceof ObjectContainer<?> )
-            {
+            }
+
+            if (other instanceof ObjectContainer<?>) {
                 return _object.equals(((ObjectContainer<?>) other)._object);
             }
-            
-            return _object.equals(other);            
+
+            return _object.equals(other);
         }
-    }    
- 
-    
-    private IDocument _doc;
+    }
+
+    private final IDocument _doc;
     private Object _docLock;
-    
-    private List<ObjectContainer<SingleBracket>> _singleBrackets;
-    private List<ObjectContainer<BracketsPair>> _bracketsPairList;
-    private List<ObjectContainer<Hint>> _hints;
-    
-    private String _positionCategory;
-    private IPositionUpdater _positionUpdater;
-    private List<IProcessingContainerListener> _listeners;
+
+    private final List<ObjectContainer<SingleBracket>> _singleBrackets;
+    private final List<ObjectContainer<BracketsPair>> _bracketsPairList;
+    private final List<ObjectContainer<Hint>> _hints;
+
+    private final String _positionCategory;
+    private final IPositionUpdater _positionUpdater;
+    private final List<IProcessingContainerListener> _listeners;
 
     private boolean _bracketsPairsTouched;
     private boolean _singleBracketsTouched;
     private boolean _hintsTouched;
     private boolean _updatingListeners;
-    
-    
-    
-    public BracketeerProcessingContainer(IDocument doc)
-    {
-        _singleBrackets = new ArrayList<ObjectContainer<SingleBracket>>();
-        _bracketsPairList = new LinkedList<ObjectContainer<BracketsPair>>();
-        _hints = new LinkedList<ObjectContainer<Hint>>();
-        
+
+    public BracketeerProcessingContainer(final IDocument doc) {
+        _singleBrackets = new ArrayList<>();
+        _bracketsPairList = new LinkedList<>();
+        _hints = new LinkedList<>();
+
         _doc = doc;
-        if( _doc instanceof ISynchronizable )
+        if (_doc instanceof ISynchronizable) {
             _docLock = ((ISynchronizable) _doc).getLockObject();
-        else
+        } else {
             _docLock = new Object();
-        
+        }
+
         _positionCategory = "bracketeerPosition"; //$NON-NLS-1$
-        
+
         _doc.addPositionCategory(_positionCategory);
         _positionUpdater = new DefaultPositionUpdater(_positionCategory);
         _doc.addPositionUpdater(_positionUpdater);
-        
-        _listeners = new LinkedList<IProcessingContainerListener>();
-        
+
+        _listeners = new LinkedList<>();
+
         _updatingListeners = false;
     }
-    
+
     @Override
-    public void dispose()
-    {
+    public void dispose() {
         _doc.removePositionUpdater(_positionUpdater);
-        try
-        {
+        try {
             _doc.removePositionCategory(_positionCategory);
-        }
-        catch (BadPositionCategoryException e)
-        {
+        } catch (final BadPositionCategoryException e) {
             Activator.log(e);
-        }            
+        }
     }
 
-    public void addListener(IProcessingContainerListener listener)
-    {
+    public void addListener(final IProcessingContainerListener listener) {
         _listeners.add(listener);
     }
-    
-    public void removeListener(IProcessingContainerListener listener)
-    {
-        if( !_listeners.remove(listener) )
-            Activator.log(Messages.BracketeerProcessingContainer_listsnerNotFound);        
+
+    public void removeListener(final IProcessingContainerListener listener) {
+        if (!_listeners.remove(listener)) {
+            Activator.log(Messages.BracketeerProcessingContainer_listsnerNotFound);
+        }
     }
-    
-    public BracketsPair getMatchingPair(int openOffset, int closeOffset)
-    {
-    
-        synchronized(_docLock)
-        {
-            for (ObjectContainer<BracketsPair> objCont : _bracketsPairList)
-            {
-                if(objCont.isToDelete())
+
+    @Override
+    public BracketsPair getMatchingPair(final int openOffset, final int closeOffset) {
+
+        synchronized (_docLock) {
+            for (final ObjectContainer<BracketsPair> objCont : _bracketsPairList) {
+                if (objCont.isToDelete()) {
                     continue;
-                
-                BracketsPair pair = objCont.getObject();
-                Position openPos = pair.getOpeningBracket().getPosition();
-                if(openPos != null && openPos.getOffset() == openOffset)
-                {
-                    Position closePos = pair.getClosingBracket().getPosition();
-                    if(closePos != null && closePos.getOffset() == closeOffset )
+                }
+
+                final BracketsPair pair = objCont.getObject();
+                final Position openPos = pair.getOpeningBracket().getPosition();
+                if (openPos != null && openPos.getOffset() == openOffset) {
+                    final Position closePos = pair.getClosingBracket().getPosition();
+                    if (closePos != null && closePos.getOffset() == closeOffset) {
                         return pair;
-                    
-                    Activator.log(String.format("[%1$d,%2$d] paritally found - %3$s",  //$NON-NLS-1$
-                                                openOffset, closeOffset, pair.toString()));
+                    }
+
+                    Activator.log(String.format("[%1$d,%2$d] paritally found - %3$s", //$NON-NLS-1$
+                            openOffset, closeOffset, pair.toString()));
                     return null;
                 }
             }
         }
-        
+
         return null;
     }
-    
-    public List<BracketsPair> getPairsSurrounding(int offset)
-    {
-        List<BracketsPair> retVal = new LinkedList<BracketsPair>();
-        
-        synchronized(_docLock)
-        {
-            for (ObjectContainer<BracketsPair> objCont : _bracketsPairList)
-            {
-                BracketsPair pair = objCont.getObject();
-                
-                Position opBrPos = pair.getOpeningBracket().getPosition();
-                Position clBrPos = pair.getClosingBracket().getPosition();
-                if( (opBrPos == null) || (clBrPos == null) )
+
+    public List<BracketsPair> getPairsSurrounding(final int offset) {
+        final List<BracketsPair> retVal = new LinkedList<>();
+
+        synchronized (_docLock) {
+            for (final ObjectContainer<BracketsPair> objCont : _bracketsPairList) {
+                final BracketsPair pair = objCont.getObject();
+
+                final Position opBrPos = pair.getOpeningBracket().getPosition();
+                final Position clBrPos = pair.getClosingBracket().getPosition();
+                if (opBrPos == null || clBrPos == null) {
                     continue;
-                
-                if( (opBrPos.offset <= offset) && (clBrPos.offset > offset) )
-                {
-                    if( !retVal.contains(pair) )
-                    {
-                        retVal.add(pair);                     
+                }
+
+                if (opBrPos.offset <= offset && clBrPos.offset > offset) {
+                    if (!retVal.contains(pair)) {
+                        retVal.add(pair);
                     }
                 }
             }
@@ -195,161 +175,133 @@ public class BracketeerProcessingContainer implements IDisposable, IBracketeerPr
         return retVal;
     }
 
-   
-    public List<BracketsPair> getMatchingPairs(int startOffset, int length)
-    {
-        List<BracketsPair> retVal = new LinkedList<BracketsPair>();
-        
-        synchronized(_docLock)
-        {
-            for (ObjectContainer<BracketsPair> objCont : _bracketsPairList)
-            {
-                BracketsPair pair = objCont.getObject();
+    public List<BracketsPair> getMatchingPairs(final int startOffset, final int length) {
+        final List<BracketsPair> retVal = new LinkedList<>();
 
-                for (SingleBracket br : pair.getBrackets())
-                {
-                    Position pos = br.getPosition();
-                    if(pos != null && pos.overlapsWith(startOffset, length) &&
-                            !retVal.contains(pair) )
-                    {
+        synchronized (_docLock) {
+            for (final ObjectContainer<BracketsPair> objCont : _bracketsPairList) {
+                final BracketsPair pair = objCont.getObject();
+
+                for (final SingleBracket br : pair.getBrackets()) {
+                    final Position pos = br.getPosition();
+                    if (pos != null && pos.overlapsWith(startOffset, length) && !retVal.contains(pair)) {
                         retVal.add(pair);
                         break;
                     }
                 }
             }
         }
-        return retVal;        
+        return retVal;
     }
 
-    public List<SingleBracket> getSingleBrackets()
-    {
-        List<SingleBracket> ret = new LinkedList<SingleBracket>();
-        synchronized(_docLock)
-        {
-            for (ObjectContainer<SingleBracket> objCont : _singleBrackets)
-            {
-                SingleBracket br = objCont.getObject();
-                
-                if( br.getPosition() != null )
+    public List<SingleBracket> getSingleBrackets() {
+        final List<SingleBracket> ret = new LinkedList<>();
+        synchronized (_docLock) {
+            for (final ObjectContainer<SingleBracket> objCont : _singleBrackets) {
+                final SingleBracket br = objCont.getObject();
+
+                if (br.getPosition() != null) {
                     ret.add(br);
+                }
             }
         }
         return ret;
     }
-    
-    public Hint getHint(int startOffset)
-    {
-        synchronized(_docLock)
-        {
-            for (ObjectContainer<Hint> objCont : _hints)
-            {
-                Hint hint = objCont.getObject();
-                
-                Position pos = hint.getHintPosition();
-                if( pos != null && pos.overlapsWith(startOffset, 1) )
+
+    public Hint getHint(final int startOffset) {
+        synchronized (_docLock) {
+            for (final ObjectContainer<Hint> objCont : _hints) {
+                final Hint hint = objCont.getObject();
+
+                final Position pos = hint.getHintPosition();
+                if (pos != null && pos.overlapsWith(startOffset, 1)) {
                     return hint;
+                }
             }
         }
         return null;
     }
-    
-    public List<Hint> getHints()
-    {
-        List<Hint> ret = new LinkedList<Hint>();
-        synchronized(_docLock)
-        {
-            for (ObjectContainer<Hint> objCont : _hints)
-            {
-                Hint hint = objCont.getObject();
-                
-                if( !hint.hasDeletedPosition() )
+
+    @Override
+    public List<Hint> getHints() {
+        final List<Hint> ret = new LinkedList<>();
+        synchronized (_docLock) {
+            for (final ObjectContainer<Hint> objCont : _hints) {
+                final Hint hint = objCont.getObject();
+
+                if (!hint.hasDeletedPosition()) {
                     ret.add(hint);
+                }
             }
         }
         return ret;
     }
-    
-    public List<BracketsPair> getBracketPairs()
-    {
-        List<BracketsPair> ret = new LinkedList<BracketsPair>();
-        synchronized(_docLock)
-        {
-            for (ObjectContainer<BracketsPair> objCont : _bracketsPairList)
-            {
-                BracketsPair pair = objCont.getObject();
-                if( !pair.hasDeletedPosition() )
+
+    public List<BracketsPair> getBracketPairs() {
+        final List<BracketsPair> ret = new LinkedList<>();
+        synchronized (_docLock) {
+            for (final ObjectContainer<BracketsPair> objCont : _bracketsPairList) {
+                final BracketsPair pair = objCont.getObject();
+                if (!pair.hasDeletedPosition()) {
                     ret.add(pair);
+                }
             }
         }
         return ret;
     }
-    
-    public void markAllToBeDeleted()
-    {
-        synchronized(_docLock)
-        {
-            for (ObjectContainer<BracketsPair> objCont : _bracketsPairList)
-            {
+
+    public void markAllToBeDeleted() {
+        synchronized (_docLock) {
+            for (final ObjectContainer<BracketsPair> objCont : _bracketsPairList) {
                 objCont.setToDelete(true);
             }
-        
-            for (ObjectContainer<SingleBracket> objCont : _singleBrackets)
-            {
+
+            for (final ObjectContainer<SingleBracket> objCont : _singleBrackets) {
                 objCont.setToDelete(true);
-            }            
-        
-            for (ObjectContainer<Hint> objCont : _hints)
-            {
+            }
+
+            for (final ObjectContainer<Hint> objCont : _hints) {
                 objCont.setToDelete(true);
             }
         }
     }
 
-    public void deleteAllMarked()
-    {
-        synchronized(_docLock)
-        {
+    public void deleteAllMarked() {
+        synchronized (_docLock) {
             {
-                Iterator<ObjectContainer<BracketsPair>> it = _bracketsPairList.iterator();
-                while(it.hasNext())
-                {
-                    ObjectContainer<BracketsPair> objCont = it.next();
-                    
-                    if( objCont.isToDelete() )
-                    {
+                final Iterator<ObjectContainer<BracketsPair>> it = _bracketsPairList.iterator();
+                while (it.hasNext()) {
+                    final ObjectContainer<BracketsPair> objCont = it.next();
+
+                    if (objCont.isToDelete()) {
                         _bracketsPairsTouched = true;
-                        for (SingleBracket bracket : objCont.getObject().getBrackets())
-                        {
+                        for (final SingleBracket bracket : objCont.getObject().getBrackets()) {
                             delete(bracket.getPositionRaw());
                         }
                         it.remove();
                     }
                 }
             }
-            
+
             {
-                Iterator<ObjectContainer<SingleBracket>> it = _singleBrackets.iterator();
-                while(it.hasNext())
-                {
-                    ObjectContainer<SingleBracket> objCont = it.next();
-                    
-                    if( objCont.isToDelete() )
-                    {
+                final Iterator<ObjectContainer<SingleBracket>> it = _singleBrackets.iterator();
+                while (it.hasNext()) {
+                    final ObjectContainer<SingleBracket> objCont = it.next();
+
+                    if (objCont.isToDelete()) {
                         _singleBracketsTouched = true;
                         delete(objCont.getObject().getPositionRaw());
                         it.remove();
                     }
                 }
             }
-            
+
             {
-                Iterator<ObjectContainer<Hint>> it = _hints.iterator();
-                while(it.hasNext())
-                {
-                    ObjectContainer<Hint> objCont = it.next();
-                    
-                    if( objCont.isToDelete() )
-                    {
+                final Iterator<ObjectContainer<Hint>> it = _hints.iterator();
+                while (it.hasNext()) {
+                    final ObjectContainer<Hint> objCont = it.next();
+
+                    if (objCont.isToDelete()) {
                         _hintsTouched = true;
                         delete(objCont.getObject().getOriginPositionRaw());
                         delete(objCont.getObject().getHintPositionRaw());
@@ -358,14 +310,10 @@ public class BracketeerProcessingContainer implements IDisposable, IBracketeerPr
                 }
             }
         }
-        if(Activator.DEBUG)
-        {
-            try
-            {
+        if (Activator.DEBUG) {
+            try {
                 Activator.trace("Positions tracked = " + _doc.getPositions(_positionCategory).length); //$NON-NLS-1$
-            }
-            catch (BadPositionCategoryException e)
-            {
+            } catch (final BadPositionCategoryException e) {
                 Activator.log(e);
             }
             Activator.trace("Pairs = " + _bracketsPairList.size()); //$NON-NLS-1$
@@ -374,209 +322,159 @@ public class BracketeerProcessingContainer implements IDisposable, IBracketeerPr
         }
     }
 
-    public void updateComplete()
-    {
+    public void updateComplete() {
         _updatingListeners = true;
-        
-        for (IProcessingContainerListener listener : _listeners)
-        {
-            listener.containerUpdated(_bracketsPairsTouched, 
-                                      _singleBracketsTouched,
-                                      _hintsTouched);
+
+        for (final IProcessingContainerListener listener : _listeners) {
+            listener.containerUpdated(_bracketsPairsTouched, _singleBracketsTouched, _hintsTouched);
         }
-        
+
         _bracketsPairsTouched = false;
         _singleBracketsTouched = false;
         _hintsTouched = false;
-        
+
         _updatingListeners = false;
     }
-    
-    public boolean isUpdatingListeners()
-    {
+
+    public boolean isUpdatingListeners() {
         return _updatingListeners;
     }
-    
-    public void add(BracketsPair pair) throws BadLocationException
-    {
-        synchronized(_docLock)
-        {
-            ObjectContainer<BracketsPair> existing = 
-                    findExistingObj(_bracketsPairList, pair);
-            
-            if( existing != null )
-            {
-                if(  existing.equals(pair) && !existing.getObject().hasDeletedPosition() )
-                {
+
+    @Override
+    public void add(final BracketsPair pair) throws BadLocationException {
+        synchronized (_docLock) {
+            final ObjectContainer<BracketsPair> existing = findExistingObj(_bracketsPairList, pair);
+
+            if (existing != null) {
+                if (existing.equals(pair) && !existing.getObject().hasDeletedPosition()) {
                     existing.setToDelete(false);
                     return;
-                }
-                else
-                {
+                } else {
                     deletePair(existing);
                 }
             }
-            
+
             _bracketsPairsTouched = true;
-            
-            ObjectContainer<BracketsPair> pairContainer =
-                    new ObjectContainer<BracketsPair>(pair);
-            
+
+            final ObjectContainer<BracketsPair> pairContainer = new ObjectContainer<>(pair);
+
             _bracketsPairList.add(pairContainer);
-            for (SingleBracket br : pair.getBrackets())
-            {
+            for (final SingleBracket br : pair.getBrackets()) {
                 addPosition(br.getPosition());
             }
         }
     }
-    
-    
-    public void add(SingleBracket bracket) throws BadLocationException
-    {
-        synchronized(_docLock)
-        {
-            ObjectContainer<SingleBracket> existing = 
-                    findExistingObj(_singleBrackets, bracket);
-            
-            if( existing != null )
-            {
-                if( existing.equals(bracket) && existing.getObject().getPosition() != null )
-                {
+
+    @Override
+    public void add(final SingleBracket bracket) throws BadLocationException {
+        synchronized (_docLock) {
+            final ObjectContainer<SingleBracket> existing = findExistingObj(_singleBrackets, bracket);
+
+            if (existing != null) {
+                if (existing.equals(bracket) && existing.getObject().getPosition() != null) {
                     existing.setToDelete(false);
                     return;
-                }
-                else
-                {
+                } else {
                     deleteSingle(existing);
                 }
             }
-            
+
             _singleBracketsTouched = true;
-            
-            _singleBrackets.add(new ObjectContainer<SingleBracket>(bracket));
-            
+
+            _singleBrackets.add(new ObjectContainer<>(bracket));
+
             addPosition(bracket.getPosition());
         }
-    }    
-    
-    public void add(Hint hint) throws BadLocationException
-    {
-        synchronized(_docLock)
-        {
-            ObjectContainer<Hint> existing = 
-                    findExistingObj(_hints, hint);
-            
-            if( existing != null )
-            {
-                if( existing.equals(hint) && !existing.getObject().hasDeletedPosition() )
-                {
+    }
+
+    @Override
+    public void add(final Hint hint) throws BadLocationException {
+        synchronized (_docLock) {
+            final ObjectContainer<Hint> existing = findExistingObj(_hints, hint);
+
+            if (existing != null) {
+                if (existing.equals(hint) && !existing.getObject().hasDeletedPosition()) {
                     existing.setToDelete(false);
                     return;
-                }
-                else
-                {
+                } else {
                     deleteHint(existing);
                 }
             }
-            
+
             _hintsTouched = true;
-            
-            _hints.add(new ObjectContainer<Hint>(hint));
-            
+
+            _hints.add(new ObjectContainer<>(hint));
+
             addPosition(hint.getHintPositionRaw());
             addPosition(hint.getOriginPositionRaw());
         }
-    }    
-    
-    private void addPosition(Position position) throws BadLocationException
-    {
-        try
-        {
-            if( position != null )
+    }
+
+    private void addPosition(final Position position) throws BadLocationException {
+        try {
+            if (position != null) {
                 _doc.addPosition(_positionCategory, position);
-        }
-        catch (BadPositionCategoryException e)
-        {
+            }
+        } catch (final BadPositionCategoryException e) {
             Activator.log(e);
         }
 
     }
 
-    private static <T> ObjectContainer<T> findExistingObj(List<ObjectContainer<T>> objList,
-                                                          T obj)
-    {
-        for (ObjectContainer<T> objCont : objList)
-        {
-            if(objCont.equals(obj))
+    private static <T> ObjectContainer<T> findExistingObj(final List<ObjectContainer<T>> objList, final T obj) {
+        for (final ObjectContainer<T> objCont : objList) {
+            if (objCont.equals(obj)) {
                 return objCont;
+            }
         }
         return null;
     }
 
-    private void delete(Position position)
-    {
-        try
-        {
+    private void delete(final Position position) {
+        try {
             _doc.removePosition(_positionCategory, position);
-        }
-        catch (BadPositionCategoryException e)
-        {
+        } catch (final BadPositionCategoryException e) {
             Activator.log(e);
         }
     }
-    
-    private void deletePair(ObjectContainer<BracketsPair> objCont)
-    {   
-        synchronized(_docLock)
-        {
-            boolean found = _bracketsPairList.remove(objCont);
-            Assert.isTrue(found);        
-            
-            for (SingleBracket bracket : objCont.getObject().getBrackets())
-            {
+
+    private void deletePair(final ObjectContainer<BracketsPair> objCont) {
+        synchronized (_docLock) {
+            final boolean found = _bracketsPairList.remove(objCont);
+            Assert.isTrue(found);
+
+            for (final SingleBracket bracket : objCont.getObject().getBrackets()) {
                 delete(bracket.getPositionRaw());
             }
         }
     }
-    
-    private void deleteSingle(ObjectContainer<SingleBracket> objCont)
-    {   
-        synchronized(_docLock)
-        {
-            boolean found = _singleBrackets.remove(objCont);
-            Assert.isTrue(found);        
-            
-            SingleBracket bracket = objCont.getObject();
+
+    private void deleteSingle(final ObjectContainer<SingleBracket> objCont) {
+        synchronized (_docLock) {
+            final boolean found = _singleBrackets.remove(objCont);
+            Assert.isTrue(found);
+
+            final SingleBracket bracket = objCont.getObject();
             delete(bracket.getPositionRaw());
         }
     }
-    
-    private void deleteHint(ObjectContainer<Hint> objCont)
-    {   
-        synchronized(_docLock)
-        {
-            boolean found = _hints.remove(objCont);
-            Assert.isTrue(found);        
-            
-            Hint hint = objCont.getObject();
+
+    private void deleteHint(final ObjectContainer<Hint> objCont) {
+        synchronized (_docLock) {
+            final boolean found = _hints.remove(objCont);
+            Assert.isTrue(found);
+
+            final Hint hint = objCont.getObject();
             delete(hint.getOriginPositionRaw());
             delete(hint.getHintPositionRaw());
         }
     }
-    
-    /*
-    private static <T> List<T> mapObjListToObjList(Collection<ObjectContainer<T>> vals)
-    {
-        List<T> retVal = new LinkedList<T>();
-        for (ObjectContainer<T> mapObj : vals)
-        {
-            if( !retVal.contains(mapObj.getObject()) && !mapObj.isToDelete() )
-                retVal.add(mapObj.getObject());
-        }
-        return retVal;
-    }
-    */
-    
 
-    
+    /*
+     * private static <T> List<T> mapObjListToObjList(Collection<ObjectContainer<T>> vals) { List<T>
+     * retVal = new LinkedList<T>(); for (ObjectContainer<T> mapObj : vals) { if(
+     * !retVal.contains(mapObj.getObject()) && !mapObj.isToDelete() ) retVal.add(mapObj.getObject()); }
+     * return retVal; }
+     */
+
 }

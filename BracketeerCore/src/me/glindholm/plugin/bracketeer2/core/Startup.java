@@ -12,11 +12,9 @@ package me.glindholm.plugin.bracketeer2.core;
 
 import org.eclipse.ui.IStartup;
 
-public class Startup implements IStartup
-{
+public class Startup implements IStartup {
     @Override
-    public void earlyStartup()
-    {
+    public void earlyStartup() {
         // nothing, I just want the plugin to be loaded
     }
 }

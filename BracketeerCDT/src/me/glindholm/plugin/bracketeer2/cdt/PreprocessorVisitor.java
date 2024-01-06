@@ -27,139 +27,115 @@ import me.glindholm.plugin.bracketeer2.common.IBracketeerProcessingContainer;
 import me.glindholm.plugin.bracketeer2.common.IHintConfiguration;
 import me.glindholm.plugin.bracketeer2.common.MutableBool;
 
-
-public class PreprocessorVisitor
-{
+public class PreprocessorVisitor {
     MutableBool _cancelProcessing;
     IBracketeerProcessingContainer _container;
     IHintConfiguration _hintConf;
-    
-    class CondInfo
-    {
-        public String _cond;
-        public IASTFileLocation _fileLoc;  
 
-        public CondInfo(String str, IASTFileLocation fileLocation)
-        {
+    class CondInfo {
+        public String _cond;
+        public IASTFileLocation _fileLoc;
+
+        public CondInfo(final String str, final IASTFileLocation fileLocation) {
             _cond = str;
-            _fileLoc = fileLocation;            
+            _fileLoc = fileLocation;
         }
     }
-    
+
     Stack<CondInfo> _stack;
-    
-    public PreprocessorVisitor(IBracketeerProcessingContainer container,
-                               MutableBool cancelProcessing,
-                               IHintConfiguration hintConf)
-    {
+
+    public PreprocessorVisitor(final IBracketeerProcessingContainer container, final MutableBool cancelProcessing, final IHintConfiguration hintConf) {
         _cancelProcessing = cancelProcessing;
         _container = container;
         _hintConf = hintConf;
-        
-        _stack = new Stack<CondInfo>();
+
+        _stack = new Stack<>();
     }
-    
-    private String stripEolBackslash(char[] ch)
-    {
-        String str = new String(ch);
+
+    private String stripEolBackslash(final char[] ch) {
+        final String str = new String(ch);
         return stripEolBackslash(str);
     }
-    
-    private String stripEolBackslash(String str)
-    {
+
+    private String stripEolBackslash(final String str) {
         return str.replaceAll("\\\\(\\s*[\r|\n])", "$1"); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
-    public void visit(IASTPreprocessorStatement[] stmts) throws BadLocationException
-    {
-        for (IASTPreprocessorStatement stmt : stmts)
-        {
-            if(_cancelProcessing.get())
+    public void visit(final IASTPreprocessorStatement[] stmts) throws BadLocationException {
+        for (final IASTPreprocessorStatement stmt : stmts) {
+            if (_cancelProcessing.get()) {
                 break;
-            
-            if( stmt instanceof IASTPreprocessorIfStatement)
-            {
-                StringBuffer str = new StringBuffer();
+            }
+
+            if (stmt instanceof IASTPreprocessorIfStatement) {
+                final StringBuilder str = new StringBuilder();
                 str.append("if( "); //$NON-NLS-1$
-                str.append(stripEolBackslash(((IASTPreprocessorIfStatement)stmt).getCondition()));
+                str.append(stripEolBackslash(((IASTPreprocessorIfStatement) stmt).getCondition()));
                 str.append(" )"); //$NON-NLS-1$
                 _stack.push(new CondInfo(str.toString(), stmt.getFileLocation()));
-            }
-            else if( stmt instanceof IASTPreprocessorIfdefStatement)
-            {
-                StringBuffer str = new StringBuffer();
+            } else if (stmt instanceof IASTPreprocessorIfdefStatement) {
+                final StringBuilder str = new StringBuilder();
                 str.append("if_defined( "); //$NON-NLS-1$
-                str.append(stripEolBackslash(((IASTPreprocessorIfdefStatement)stmt).getCondition()));
+                str.append(stripEolBackslash(((IASTPreprocessorIfdefStatement) stmt).getCondition()));
                 str.append(" )"); //$NON-NLS-1$
-                
+
                 _stack.push(new CondInfo(str.toString(), stmt.getFileLocation()));
-            }
-            else if( stmt instanceof IASTPreprocessorIfndefStatement)
-            {
-                StringBuffer str = new StringBuffer();
+            } else if (stmt instanceof IASTPreprocessorIfndefStatement) {
+                final StringBuilder str = new StringBuilder();
                 str.append("if_not_defined( "); //$NON-NLS-1$
-                str.append(stripEolBackslash(((IASTPreprocessorIfndefStatement)stmt).getCondition()));
+                str.append(stripEolBackslash(((IASTPreprocessorIfndefStatement) stmt).getCondition()));
                 str.append(" )"); //$NON-NLS-1$
-                
+
                 _stack.push(new CondInfo(str.toString(), stmt.getFileLocation()));
-            }
-            else if( stmt instanceof IASTPreprocessorElifStatement)
-            {
+            } else if (stmt instanceof IASTPreprocessorElifStatement) {
                 CondInfo cond = null;
-                if(!_stack.empty())
-                {
+                if (!_stack.empty()) {
                     cond = _stack.pop();
                 }
-                
-                if( cond != null )
-                {
-                    IASTFileLocation location = stmt.getFileLocation();
-                    int endLoc = location.getNodeOffset()+location.getNodeLength()-1;
-                    int startLoc = cond._fileLoc.getNodeOffset();
+
+                if (cond != null) {
+                    final IASTFileLocation location = stmt.getFileLocation();
+                    final int endLoc = location.getNodeOffset() + location.getNodeLength() - 1;
+                    final int startLoc = cond._fileLoc.getNodeOffset();
                     _container.add(new Hint("preprocess", startLoc, endLoc, cond._cond)); //$NON-NLS-1$
                 }
-                
-                StringBuffer str = new StringBuffer();
+
+                final StringBuilder str = new StringBuilder();
                 str.append("if( "); //$NON-NLS-1$
-                str.append(stripEolBackslash(((IASTPreprocessorElifStatement)stmt).getCondition()));
+                str.append(stripEolBackslash(((IASTPreprocessorElifStatement) stmt).getCondition()));
                 str.append(" )"); //$NON-NLS-1$
-                
+
                 _stack.push(new CondInfo(str.toString(), stmt.getFileLocation()));
-            }
-            else if (stmt instanceof IASTPreprocessorElseStatement)
-            {
+            } else if (stmt instanceof IASTPreprocessorElseStatement) {
                 CondInfo cond = null;
-                if(!_stack.empty())
-                {
+                if (!_stack.empty()) {
                     cond = _stack.pop();
                 }
 
-                StringBuffer str = new StringBuffer();
+                final StringBuilder str = new StringBuilder();
                 str.append("else_of_"); //$NON-NLS-1$
 
-                if( cond != null )
-                {
-                    IASTFileLocation location = stmt.getFileLocation();
-                    int endLoc = location.getNodeOffset()+location.getNodeLength()-1;
-                    int startLoc = cond._fileLoc.getNodeOffset();
+                if (cond != null) {
+                    final IASTFileLocation location = stmt.getFileLocation();
+                    final int endLoc = location.getNodeOffset() + location.getNodeLength() - 1;
+                    final int startLoc = cond._fileLoc.getNodeOffset();
                     _container.add(new Hint("preprocess", startLoc, endLoc, cond._cond)); //$NON-NLS-1$
                     str.append(cond._cond);
                 }
-                
+
                 _stack.push(new CondInfo(str.toString(), stmt.getFileLocation()));
-            }
-            else if( stmt instanceof IASTPreprocessorEndifStatement)
-            {
-                if(_stack.empty())
+            } else if (stmt instanceof IASTPreprocessorEndifStatement) {
+                if (_stack.empty()) {
                     continue;
-                
-                CondInfo cond = _stack.pop();
-                
-                IASTFileLocation location = stmt.getFileLocation();
-                int endLoc = location.getNodeOffset()+location.getNodeLength()-1;
-                int startLoc = cond._fileLoc.getNodeOffset();
+                }
+
+                final CondInfo cond = _stack.pop();
+
+                final IASTFileLocation location = stmt.getFileLocation();
+                final int endLoc = location.getNodeOffset() + location.getNodeLength() - 1;
+                final int startLoc = cond._fileLoc.getNodeOffset();
                 _container.add(new Hint("preprocess", startLoc, endLoc, cond._cond)); //$NON-NLS-1$
-            }            
+            }
         }
     }
 

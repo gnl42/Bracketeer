@@ -10,7 +10,7 @@
             id="Bracketeer.preferencePages.Main.BracketHighlighting"
             name="%page.highlight">
          <keywordReference
-               id="com.chookapp.org.keywords.bracketHighlighting">
+               id="me.glindholm.plugin.bracketeer2.keywords.bracketHighlighting">
          </keywordReference>
       </page>
       <page
@@ -19,7 +19,7 @@
             id="Bracketeer.preferencePages.Main"
             name="%page.main">
          <keywordReference
-               id="com.chookapp.org.keywords.main">
+               id="me.glindholm.plugin.bracketeer2.keywords.main">
          </keywordReference>
       </page>
       <page
@@ -28,7 +28,7 @@
             id="Bracketeer.preferencePages.Main.Hint"
             name="%page.hints">
          <keywordReference
-               id="com.chookapp.org.keywords.hints">
+               id="me.glindholm.plugin.bracketeer2.keywords.hints">
          </keywordReference>
       </page>
    </extension>
@@ -50,24 +50,24 @@
             locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
         
          <toolbar
-               id="com.chookapp.org.bracketeer.toolbar"
+               id="me.glindholm.plugin.bracketeer2.toolbar"
                label="%toolbar.label">
             <command
-                  commandId="com.chookapp.org.bracketeer.commands.EnableSurroundingBrackets"
+                  commandId="me.glindholm.plugin.bracketeer2.commands.EnableSurroundingBrackets"
                   icon="icons/surrounding.gif"
                   label="%command.surrounding.name"
                   style="toggle"
                   tooltip="%command.surrounding.description">
             </command>
             <command
-                  commandId="com.chookapp.org.bracketeer.commands.EnableHoveredBrackets"
+                  commandId="me.glindholm.plugin.bracketeer2.commands.EnableHoveredBrackets"
                   icon="icons/hoveredBrackets.gif"
                   label="%command.hoveredBrackets.name"
                   style="toggle"
                   tooltip="%command.hoveredBrackets.description">
             </command>
             <command
-                  commandId="com.chookapp.org.bracketeer.commands.EnableHintsInEditor"
+                  commandId="me.glindholm.plugin.bracketeer2.commands.EnableHintsInEditor"
                   icon="icons/hint.gif"
                   label="%command.editorHints.name"
                   style="toggle"
@@ -79,37 +79,37 @@
    <extension
          point="org.eclipse.ui.commands">
       <command
-            categoryId="com.chookapp.org.bracketeer.category"
+            categoryId="me.glindholm.plugin.bracketeer2.category"
             description="%command.surrounding.description"
-            id="com.chookapp.org.bracketeer.commands.EnableSurroundingBrackets"
+            id="me.glindholm.plugin.bracketeer2.commands.EnableSurroundingBrackets"
             name="%command.surrounding.name">
          <state
-               class="com.chookapp.org.bracketeer.commands.BracketeerToggleState:Surrounding.Enable"
+               class="me.glindholm.plugin.bracketeer2.commands.BracketeerToggleState:Surrounding.Enable"
                id="org.eclipse.ui.commands.toggleState">
          </state>
       </command>
       <command
-            categoryId="com.chookapp.org.bracketeer.category"
+            categoryId="me.glindholm.plugin.bracketeer2.category"
             description="%command.hoveredBrackets.description"
-            id="com.chookapp.org.bracketeer.commands.EnableHoveredBrackets"
+            id="me.glindholm.plugin.bracketeer2.commands.EnableHoveredBrackets"
             name="%command.hoveredBrackets.name">
          <state
-               class="com.chookapp.org.bracketeer.commands.BracketeerToggleState:Hovering.Enable"
+               class="me.glindholm.plugin.bracketeer2.commands.BracketeerToggleState:Hovering.Enable"
                id="org.eclipse.ui.commands.toggleState">
          </state>
       </command>
       <command
-            categoryId="com.chookapp.org.bracketeer.category"
+            categoryId="me.glindholm.plugin.bracketeer2.category"
             description="%command.editorHints.description"
-            id="com.chookapp.org.bracketeer.commands.EnableHintsInEditor"
+            id="me.glindholm.plugin.bracketeer2.commands.EnableHintsInEditor"
             name="%command.editorHints.name">
          <state
-               class="com.chookapp.org.bracketeer.commands.BracketeerToggleState:Hints.Globals.ShowInEditor"
+               class="me.glindholm.plugin.bracketeer2.commands.BracketeerToggleState:Hints.Globals.ShowInEditor"
                id="org.eclipse.ui.commands.toggleState">
          </state>
       </command>
       <category
-            id="com.chookapp.org.bracketeer.category"
+            id="me.glindholm.plugin.bracketeer2.category"
             name="%category.name">
       </category>
    </extension>
@@ -117,10 +117,10 @@
          point="org.eclipse.ui.handlers">
       <handler
             class="me.glindholm.plugin.bracketeer2.commands.BracketeerToggleCommandHendler"
-            commandId="com.chookapp.org.bracketeer.commands.EnableSurroundingBrackets">
+            commandId="me.glindholm.plugin.bracketeer2.commands.EnableSurroundingBrackets">
          <activeWhen>
             <with
-                  variable="com.chookapp.org.bracketeer.pluginName">
+                  variable="me.glindholm.plugin.bracketeer2.pluginName">
                <not>
                   <equals
                         value="">
@@ -131,10 +131,10 @@
       </handler>
       <handler
             class="me.glindholm.plugin.bracketeer2.commands.BracketeerToggleCommandHendler"
-            commandId="com.chookapp.org.bracketeer.commands.EnableHoveredBrackets">
+            commandId="me.glindholm.plugin.bracketeer2.commands.EnableHoveredBrackets">
          <activeWhen>
             <with
-                  variable="com.chookapp.org.bracketeer.pluginName">
+                  variable="me.glindholm.plugin.bracketeer2.pluginName">
                <not>
                   <equals
                         value="">
@@ -145,10 +145,10 @@
       </handler>
       <handler
             class="me.glindholm.plugin.bracketeer2.commands.BracketeerToggleCommandHendler"
-            commandId="com.chookapp.org.bracketeer.commands.EnableHintsInEditor">
+            commandId="me.glindholm.plugin.bracketeer2.commands.EnableHintsInEditor">
          <activeWhen>
             <with
-                  variable="com.chookapp.org.bracketeer.pluginName">
+                  variable="me.glindholm.plugin.bracketeer2.pluginName">
                <not>
                   <equals
                         value="">
@@ -163,7 +163,7 @@
       <sourceProvider
             provider="me.glindholm.plugin.bracketeer2.commands.SourceProvider">
          <variable
-               name="com.chookapp.org.bracketeer.pluginName"
+               name="me.glindholm.plugin.bracketeer2.pluginName"
                priorityLevel="workbench">
          </variable>
       </sourceProvider>
@@ -171,28 +171,28 @@
    <extension
          point="org.eclipse.ui.keywords">
       <keyword
-            id="com.chookapp.org.keywords.bracketHighlighting"
+            id="me.glindholm.plugin.bracketeer2.keywords.bracketHighlighting"
             label="%page.highlight.keyword">
       </keyword>
       <keyword
-            id="com.chookapp.org.keywords.hints"
+            id="me.glindholm.plugin.bracketeer2.keywords.hints"
             label="%page.hints.keyword">
       </keyword>
       <keyword
-            id="com.chookapp.org.keywords.main"
+            id="me.glindholm.plugin.bracketeer2.keywords.main"
             label="%page.main.keyword">
       </keyword>
    </extension>
    <extension
          point="org.eclipse.ui.bindings">
       <key
-            commandId="com.chookapp.org.bracketeer.commands.EnableSurroundingBrackets"
+            commandId="me.glindholm.plugin.bracketeer2.commands.EnableSurroundingBrackets"
             contextId="org.eclipse.ui.textEditorScope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="CTRL+[ CTRL+S">
       </key>
       <key
-            commandId="com.chookapp.org.bracketeer.commands.EnableHintsInEditor"
+            commandId="me.glindholm.plugin.bracketeer2.commands.EnableHintsInEditor"
             contextId="org.eclipse.ui.textEditorScope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="CTRL+[ CTRL+H">
@@ -206,7 +206,7 @@
       </contexts>
    </extension>
    <extension
-         id="com.chookapp.org.bracketeer.unmatchedBracket.marker"
+         id="me.glindholm.plugin.bracketeer2.unmatchedBracket.marker"
          name="%missingPairMarker.label"
          point="org.eclipse.core.resources.markers">
    </extension>
@@ -214,35 +214,35 @@
          point="org.eclipse.ui.editors.annotationTypes">
       <type
             markerSeverity="1"
-            markerType="com.chookapp.org.bracketeer.unmatchedBracket.marker"
-            name="com.chookapp.org.bracketeer.unmatchedBracket.annotation"
+            markerType="me.glindholm.plugin.bracketeer2.unmatchedBracket.marker"
+            name="me.glindholm.plugin.bracketeer2.unmatchedBracket.annotation"
             super="org.eclipse.ui.workbench.texteditor.error">
       </type>
    </extension>
    <extension
          point="org.eclipse.ui.editors.markerAnnotationSpecification">
       <specification
-            annotationType="com.chookapp.org.bracketeer.unmatchedBracket.annotation"
-            colorPreferenceKey="com.chookapp.org.bracketeer.unmatchedBracket.annotation.color"
+            annotationType="me.glindholm.plugin.bracketeer2.unmatchedBracket.annotation"
+            colorPreferenceKey="me.glindholm.plugin.bracketeer2.unmatchedBracket.annotation.color"
             colorPreferenceValue="250,0,0"
             contributesToHeader="false"
             highlightPreferenceValue="false"
             includeOnPreferencePage="true"
             isGoToNextNavigationTarget="false"
-            isGoToNextNavigationTargetKey="com.chookapp.org.bracketeer.unmatchedBracket.annotation.goToNext"
+            isGoToNextNavigationTargetKey="me.glindholm.plugin.bracketeer2.unmatchedBracket.annotation.goToNext"
             isGoToPreviousNavigationTarget="false"
-            isGoToPreviousNavigationTargetKey="com.chookapp.org.bracketeer.unmatchedBracket.annotation.goToPrev"
+            isGoToPreviousNavigationTargetKey="me.glindholm.plugin.bracketeer2.unmatchedBracket.annotation.goToPrev"
             label="%missingPairMarker.label"
-            overviewRulerPreferenceKey="com.chookapp.org.bracketeer.unmatchedBracket.annotation.overviewRuler"
+            overviewRulerPreferenceKey="me.glindholm.plugin.bracketeer2.unmatchedBracket.annotation.overviewRuler"
             overviewRulerPreferenceValue="true"
             presentationLayer="1"
             showInNextPrevDropdownToolbarAction="false"
-            showInNextPrevDropdownToolbarActionKey="com.chookapp.org.bracketeer.unmatchedBracket.annotation.showInNextPrev"
+            showInNextPrevDropdownToolbarActionKey="me.glindholm.plugin.bracketeer2.unmatchedBracket.annotation.showInNextPrev"
             symbolicIcon="error"
-            textPreferenceKey="com.chookapp.org.bracketeer.unmatchedBracket.annotation.text"
+            textPreferenceKey="me.glindholm.plugin.bracketeer2.unmatchedBracket.annotation.text"
             textPreferenceValue="false"
             textStylePreferenceValue="NONE"
-            verticalRulerPreferenceKey="com.chookapp.org.bracketeer.unmatchedBracket.annotation.verticalRuler"
+            verticalRulerPreferenceKey="me.glindholm.plugin.bracketeer2.unmatchedBracket.annotation.verticalRuler"
             verticalRulerPreferenceValue="true">
       </specification>
    </extension>

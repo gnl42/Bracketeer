@@ -18,46 +18,42 @@ import org.eclipse.ui.ISources;
 
 import me.glindholm.plugin.bracketeer2.core.IActiveProcessorListener;
 
-public class SourceProvider extends AbstractSourceProvider implements IActiveProcessorListener
-{
+public class SourceProvider extends AbstractSourceProvider implements IActiveProcessorListener {
     public final static String PLUGIN_NAME = "me.glindholm.plugin.bracketeer2.pluginName"; //$NON-NLS-1$
-    
-    private String _pluginName; 
-    
-    public SourceProvider()
-    {
+
+    private String _pluginName;
+
+    public SourceProvider() {
         _pluginName = ""; //$NON-NLS-1$
     }
 
     @Override
-    public void dispose()
-    {
+    public void dispose() {
     }
 
     @SuppressWarnings("rawtypes")
     @Override
-    public Map getCurrentState()
-    {
-        Map<String, String> currentState = new HashMap<String, String>(1);
+    public Map getCurrentState() {
+        final Map<String, String> currentState = new HashMap<>(1);
         currentState.put(PLUGIN_NAME, _pluginName);
         return currentState;
     }
 
     @Override
-    public String[] getProvidedSourceNames()
-    {
-        return new String[] {PLUGIN_NAME};
+    public String[] getProvidedSourceNames() {
+        return new String[] { PLUGIN_NAME };
     }
-   
+
     @Override
-    public void activeProcessorChanged(String processorName)
-    {
-        if( processorName == null ) 
+    public void activeProcessorChanged(String processorName) {
+        if (processorName == null) {
             processorName = ""; //$NON-NLS-1$
-        
-        if( _pluginName.equals(processorName) )
+        }
+
+        if (_pluginName.equals(processorName)) {
             return;
-        
+        }
+
         _pluginName = processorName;
         fireSourceChanged(ISources.WORKBENCH, PLUGIN_NAME, processorName);
     }

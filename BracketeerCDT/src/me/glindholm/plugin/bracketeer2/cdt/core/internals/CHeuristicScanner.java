@@ -15,6 +15,7 @@ package me.glindholm.plugin.bracketeer2.cdt.core.internals;
 
 import java.util.Arrays;
 
+import org.eclipse.cdt.ui.text.ICPartitions;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -24,68 +25,67 @@ import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.TextUtilities;
 import org.eclipse.jface.text.TypedRegion;
 
-import org.eclipse.cdt.ui.text.ICPartitions;
-
 /**
  * Utility methods for heuristic based C manipulations in an incomplete C source file.
  *
- * <p>An instance holds some internal position in the document and is therefore not thread-safe.</p>
+ * <p>
+ * An instance holds some internal position in the document and is therefore not thread-safe.
+ * </p>
  */
 public final class CHeuristicScanner implements Symbols {
     /**
      * Returned by all methods when the requested position could not be found, or if a
      * {@link BadLocationException} was thrown while scanning.
      */
-    public static final int NOT_FOUND= -1;
+    public static final int NOT_FOUND = -1;
 
     /**
      * Special bound parameter that means either -1 (backward scanning) or
      * <code>fDocument.getLength()</code> (forward scanning).
      */
-    public static final int UNBOUND= -2;
-
+    public static final int UNBOUND = -2;
 
     /* character constants */
-    private static final char LBRACE= '{';
-    private static final char RBRACE= '}';
-    private static final char LPAREN= '(';
-    private static final char RPAREN= ')';
-    private static final char SEMICOLON= ';';
-    private static final char COLON= ':';
-    private static final char COMMA= ',';
-    private static final char LBRACKET= '[';
-    private static final char RBRACKET= ']';
-    private static final char QUESTIONMARK= '?';
-    private static final char EQUAL= '=';
-    private static final char LANGLE= '<';
-    private static final char RANGLE= '>';
-    private static final char DOT= '.';
-    private static final char MINUS= '-';
-    private static final char PLUS= '+';
-    private static final char TILDE= '~';
+    private static final char LBRACE = '{';
+    private static final char RBRACE = '}';
+    private static final char LPAREN = '(';
+    private static final char RPAREN = ')';
+    private static final char SEMICOLON = ';';
+    private static final char COLON = ':';
+    private static final char COMMA = ',';
+    private static final char LBRACKET = '[';
+    private static final char RBRACKET = ']';
+    private static final char QUESTIONMARK = '?';
+    private static final char EQUAL = '=';
+    private static final char LANGLE = '<';
+    private static final char RANGLE = '>';
+    private static final char DOT = '.';
+    private static final char MINUS = '-';
+    private static final char PLUS = '+';
+    private static final char TILDE = '~';
 
     /**
-     * Specifies the stop condition, upon which the <code>scanXXX</code> methods will decide whether
-     * to keep scanning or not. This interface may implemented by clients.
+     * Specifies the stop condition, upon which the <code>scanXXX</code> methods will decide whether to
+     * keep scanning or not. This interface may implemented by clients.
      */
     private static abstract class StopCondition {
         /**
          * Instructs the scanner to return the current position.
          *
-         * @param ch the char at the current position
+         * @param ch       the char at the current position
          * @param position the current position
-         * @param forward the iteration direction
+         * @param forward  the iteration direction
          * @return <code>true</code> if the stop condition is met.
          */
         public abstract boolean stop(char ch, int position, boolean forward);
 
         /**
-         * Asks the condition to return the next position to query. The default
-         * is to return the next/previous position.
+         * Asks the condition to return the next position to query. The default is to return the
+         * next/previous position.
          *
          * @return the next position to scan
          */
-        public int nextPosition(int position, boolean forward) {
+        public int nextPosition(final int position, final boolean forward) {
             return forward ? position + 1 : position - 1;
         }
     }
@@ -98,7 +98,7 @@ public final class CHeuristicScanner implements Symbols {
          * @see org.eclipse.cdt.internal.ui.text.CHeuristicScanner.StopCondition#stop(char)
          */
         @Override
-        public boolean stop(char ch, int position, boolean forward) {
+        public boolean stop(final char ch, final int position, final boolean forward) {
             return !Character.isWhitespace(ch);
         }
     }
@@ -113,7 +113,7 @@ public final class CHeuristicScanner implements Symbols {
          * @see org.eclipse.cdt.internal.ui.text.CHeuristicScanner.StopCondition#stop(char)
          */
         @Override
-        public boolean stop(char ch, int position, boolean forward) {
+        public boolean stop(final char ch, final int position, final boolean forward) {
             return super.stop(ch, position, true) && isDefaultPartition(position);
         }
 
@@ -121,33 +121,37 @@ public final class CHeuristicScanner implements Symbols {
          * @see org.eclipse.cdt.internal.ui.text.CHeuristicScanner.StopCondition#nextPosition(int, boolean)
          */
         @Override
-        public int nextPosition(int position, boolean forward) {
-            ITypedRegion partition= getPartition(position);
-            if (fPartition.equals(partition.getType()))
+        public int nextPosition(final int position, final boolean forward) {
+            final ITypedRegion partition = getPartition(position);
+            if (fPartition.equals(partition.getType())) {
                 return super.nextPosition(position, forward);
+            }
 
             if (forward) {
-                int end= partition.getOffset() + partition.getLength();
-                if (position < end)
+                final int end = partition.getOffset() + partition.getLength();
+                if (position < end) {
                     return end;
+                }
             } else {
-                int offset= partition.getOffset();
-                if (position > offset)
+                final int offset = partition.getOffset();
+                if (position > offset) {
                     return offset - 1;
+                }
             }
             return super.nextPosition(position, forward);
         }
     }
 
     /**
-     * Stops upon a non-java identifier (as defined by {@link Character#isJavaIdentifierPart(char)}) character.
+     * Stops upon a non-java identifier (as defined by {@link Character#isJavaIdentifierPart(char)})
+     * character.
      */
     private static class NonJavaIdentifierPart extends StopCondition {
         /*
          * @see org.eclipse.cdt.internal.ui.text.CHeuristicScanner.StopCondition#stop(char)
          */
         @Override
-        public boolean stop(char ch, int position, boolean forward) {
+        public boolean stop(final char ch, final int position, final boolean forward) {
             return !Character.isJavaIdentifierPart(ch);
         }
     }
@@ -162,7 +166,7 @@ public final class CHeuristicScanner implements Symbols {
          * @see org.eclipse.cdt.internal.ui.text.CHeuristicScanner.StopCondition#stop(char)
          */
         @Override
-        public boolean stop(char ch, int position, boolean forward) {
+        public boolean stop(final char ch, final int position, final boolean forward) {
             return super.stop(ch, position, true) || !isDefaultPartition(position);
         }
 
@@ -170,19 +174,22 @@ public final class CHeuristicScanner implements Symbols {
          * @see org.eclipse.cdt.internal.ui.text.CHeuristicScanner.StopCondition#nextPosition(int, boolean)
          */
         @Override
-        public int nextPosition(int position, boolean forward) {
-            ITypedRegion partition= getPartition(position);
-            if (fPartition.equals(partition.getType()))
+        public int nextPosition(final int position, final boolean forward) {
+            final ITypedRegion partition = getPartition(position);
+            if (fPartition.equals(partition.getType())) {
                 return super.nextPosition(position, forward);
+            }
 
             if (forward) {
-                int end= partition.getOffset() + partition.getLength();
-                if (position < end)
+                final int end = partition.getOffset() + partition.getLength();
+                if (position < end) {
                     return end;
+                }
             } else {
-                int offset= partition.getOffset();
-                if (position > offset)
+                final int offset = partition.getOffset();
+                if (position > offset) {
                     return offset - 1;
+                }
             }
             return super.nextPosition(position, forward);
         }
@@ -196,20 +203,22 @@ public final class CHeuristicScanner implements Symbols {
 
         /**
          * Creates a new instance.
+         *
          * @param ch the single character to match
          */
-        public CharacterMatch(char ch) {
-            this(new char[] {ch});
+        public CharacterMatch(final char ch) {
+            this(new char[] { ch });
         }
 
         /**
          * Creates a new instance.
+         *
          * @param chars the chars to match.
          */
-        public CharacterMatch(char[] chars) {
+        public CharacterMatch(final char[] chars) {
             Assert.isNotNull(chars);
             Assert.isTrue(chars.length > 0);
-            fChars= chars;
+            fChars = chars;
             Arrays.sort(chars);
         }
 
@@ -217,7 +226,7 @@ public final class CHeuristicScanner implements Symbols {
          * @see org.eclipse.cdt.internal.ui.text.CHeuristicScanner.StopCondition#stop(char, int)
          */
         @Override
-        public boolean stop(char ch, int position, boolean forward) {
+        public boolean stop(final char ch, final int position, final boolean forward) {
             return Arrays.binarySearch(fChars, ch) >= 0 && isDefaultPartition(position);
         }
 
@@ -225,19 +234,22 @@ public final class CHeuristicScanner implements Symbols {
          * @see org.eclipse.cdt.internal.ui.text.CHeuristicScanner.StopCondition#nextPosition(int, boolean)
          */
         @Override
-        public int nextPosition(int position, boolean forward) {
-            ITypedRegion partition= getPartition(position);
-            if (fPartition.equals(partition.getType()))
+        public int nextPosition(final int position, final boolean forward) {
+            final ITypedRegion partition = getPartition(position);
+            if (fPartition.equals(partition.getType())) {
                 return super.nextPosition(position, forward);
+            }
 
             if (forward) {
-                int end= partition.getOffset() + partition.getLength();
-                if (position < end)
+                final int end = partition.getOffset() + partition.getLength();
+                if (position < end) {
                     return end;
+                }
             } else {
-                int offset= partition.getOffset();
-                if (position > offset)
+                final int offset = partition.getOffset();
+                if (position > offset) {
                     return offset - 1;
+                }
             }
             return super.nextPosition(position, forward);
         }
@@ -259,27 +271,27 @@ public final class CHeuristicScanner implements Symbols {
     /**
      * The most recently used partition.
      */
-    private ITypedRegion fCachedPartition= new TypedRegion(-1, 0, "__no_partition_at_all"); //$NON-NLS-1$
+    private ITypedRegion fCachedPartition = new TypedRegion(-1, 0, "__no_partition_at_all"); //$NON-NLS-1$
 
     /* preset stop conditions */
-    private final StopCondition fNonWSDefaultPart= new NonWhitespaceDefaultPartition();
-    private final static StopCondition fNonWS= new NonWhitespace();
-    private final StopCondition fNonIdent= new NonJavaIdentifierPartDefaultPartition();
+    private final StopCondition fNonWSDefaultPart = new NonWhitespaceDefaultPartition();
+    private final static StopCondition fNonWS = new NonWhitespace();
+    private final StopCondition fNonIdent = new NonJavaIdentifierPartDefaultPartition();
 
     /**
      * Creates a new instance.
      *
-     * @param document the document to scan
+     * @param document     the document to scan
      * @param partitioning the partitioning to use for scanning
-     * @param partition the partition to scan in
+     * @param partition    the partition to scan in
      */
-    public CHeuristicScanner(IDocument document, String partitioning, String partition) {
+    public CHeuristicScanner(final IDocument document, final String partitioning, final String partition) {
         Assert.isLegal(document != null);
         Assert.isLegal(partitioning != null);
         Assert.isLegal(partition != null);
-        fDocument= document;
-        fPartitioning= partitioning;
-        fPartition= partition;
+        fDocument = document;
+        fPartitioning = partitioning;
+        fPartition = partition;
     }
 
     /**
@@ -287,7 +299,7 @@ public final class CHeuristicScanner implements Symbols {
      *
      * @param document the document to scan.
      */
-    public CHeuristicScanner(IDocument document) {
+    public CHeuristicScanner(final IDocument document) {
         this(document, ICPartitions.C_PARTITIONING, IDocument.DEFAULT_CONTENT_TYPE);
     }
 
@@ -302,116 +314,119 @@ public final class CHeuristicScanner implements Symbols {
 
     /**
      * Returns the next token in forward direction, starting at <code>start</code>, and not extending
-     * further than <code>bound</code>. The return value is one of the constants defined in {@link Symbols}.
-     * After a call, {@link #getPosition()} will return the position just after the scanned token
-     * (i.e. the next position that will be scanned).
+     * further than <code>bound</code>. The return value is one of the constants defined in
+     * {@link Symbols}. After a call, {@link #getPosition()} will return the position just after the
+     * scanned token (i.e. the next position that will be scanned).
      *
      * @param start the first character position in the document to consider
      * @param bound the first position not to consider any more
      * @return a constant from {@link Symbols} describing the next token
      */
-    public int nextToken(int start, int bound) {
-        int pos= scanForward(start, bound, fNonWS);
-        if (pos == NOT_FOUND)
+    public int nextToken(final int start, final int bound) {
+        int pos = scanForward(start, bound, fNonWS);
+        if (pos == NOT_FOUND) {
             return TokenEOF;
+        }
         try {
             // check for string or char literal
-            char ch = fDocument.getChar(pos);
+            final char ch = fDocument.getChar(pos);
             if (ch == '"' || ch == '\'') {
-                fChar= ch;
-                fPos= fNonWSDefaultPart.nextPosition(pos, true);
+                fChar = ch;
+                fPos = fNonWSDefaultPart.nextPosition(pos, true);
                 return TokenOTHER;
             }
-        } catch (BadLocationException exc) {
+        } catch (final BadLocationException exc) {
         }
-        pos= scanForward(pos, bound, fNonWSDefaultPart);
-        if (pos == NOT_FOUND)
+        pos = scanForward(pos, bound, fNonWSDefaultPart);
+        if (pos == NOT_FOUND) {
             return TokenEOF;
+        }
 
         fPos++;
 
         switch (fChar) {
-            case LBRACE:
-                return TokenLBRACE;
-            case RBRACE:
-                return TokenRBRACE;
-            case LBRACKET:
-                return TokenLBRACKET;
-            case RBRACKET:
-                return TokenRBRACKET;
-            case LPAREN:
-                return TokenLPAREN;
-            case RPAREN:
-                return TokenRPAREN;
-            case SEMICOLON:
-                return TokenSEMICOLON;
+        case LBRACE:
+            return TokenLBRACE;
+        case RBRACE:
+            return TokenRBRACE;
+        case LBRACKET:
+            return TokenLBRACKET;
+        case RBRACKET:
+            return TokenRBRACKET;
+        case LPAREN:
+            return TokenLPAREN;
+        case RPAREN:
+            return TokenRPAREN;
+        case SEMICOLON:
+            return TokenSEMICOLON;
+        case COLON:
+            switch (peekNextChar()) {
             case COLON:
-                switch (peekNextChar()) {
-                case COLON:
-                    ++fPos;
-                    return TokenDOUBLECOLON;
-                }
-                return TokenCOLON;
-            case COMMA:
-                return TokenCOMMA;
-            case QUESTIONMARK:
-                return TokenQUESTIONMARK;
-            case EQUAL:
-                return TokenEQUAL;
+                ++fPos;
+                return TokenDOUBLECOLON;
+            }
+            return TokenCOLON;
+        case COMMA:
+            return TokenCOMMA;
+        case QUESTIONMARK:
+            return TokenQUESTIONMARK;
+        case EQUAL:
+            return TokenEQUAL;
+        case LANGLE:
+            switch (peekNextChar()) {
             case LANGLE:
-                switch (peekNextChar()) {
-                case LANGLE:
-                    ++fPos;
-                    return TokenSHIFTLEFT;
-                case EQUAL:
-                    ++fPos;
-                    return TokenOTHER;
-                }
-                return TokenLESSTHAN;
+                ++fPos;
+                return TokenSHIFTLEFT;
+            case EQUAL:
+                ++fPos;
+                return TokenOTHER;
+            }
+            return TokenLESSTHAN;
+        case RANGLE:
+            switch (peekNextChar()) {
             case RANGLE:
-                switch (peekNextChar()) {
-                case RANGLE:
-                    ++fPos;
-                    return TokenSHIFTRIGHT;
-                case EQUAL:
-                    ++fPos;
-                    return TokenOTHER;
-                }
-                return TokenGREATERTHAN;
-            case DOT:
-                return TokenDOT;
-            case MINUS:
-                switch (peekNextChar()) {
-                case RANGLE:
-                    ++fPos;
-                    return TokenARROW;
-                }
-                return TokenMINUS;
-            case PLUS:
-                return TokenPLUS;
-            case TILDE:
-                return TokenTILDE;
+                ++fPos;
+                return TokenSHIFTRIGHT;
+            case EQUAL:
+                ++fPos;
+                return TokenOTHER;
+            }
+            return TokenGREATERTHAN;
+        case DOT:
+            return TokenDOT;
+        case MINUS:
+            switch (peekNextChar()) {
+            case RANGLE:
+                ++fPos;
+                return TokenARROW;
+            }
+            return TokenMINUS;
+        case PLUS:
+            return TokenPLUS;
+        case TILDE:
+            return TokenTILDE;
         }
 
         // else
         if (Character.isJavaIdentifierPart(fChar)) {
             // assume an identifier or keyword
-            int from= pos, to;
-            pos= scanForward(pos + 1, bound, fNonIdent);
-            if (pos == NOT_FOUND)
-                to= bound == UNBOUND ? fDocument.getLength() : bound;
-            else
-                to= pos;
+            final int from = pos;
+            int to;
+            pos = scanForward(pos + 1, bound, fNonIdent);
+            if (pos == NOT_FOUND) {
+                to = bound == UNBOUND ? fDocument.getLength() : bound;
+            } else {
+                to = pos;
+            }
 
             String identOrKeyword;
             try {
-                identOrKeyword= fDocument.get(from, to - from);
-            } catch (BadLocationException e) {
+                identOrKeyword = fDocument.get(from, to - from);
+            } catch (final BadLocationException e) {
                 return TokenEOF;
             }
 
             return getToken(identOrKeyword);
-
 
         }
         // operators, number literals etc
@@ -420,96 +435,99 @@ public final class CHeuristicScanner implements Symbols {
 
     /**
      * Returns the next token in backward direction, starting at <code>start</code>, and not extending
-     * further than <code>bound</code>. The return value is one of the constants defined in {@link Symbols}.
-     * After a call, {@link #getPosition()} will return the position just before the scanned token
-     * starts (i.e. the next position that will be scanned).
+     * further than <code>bound</code>. The return value is one of the constants defined in
+     * {@link Symbols}. After a call, {@link #getPosition()} will return the position just before the
+     * scanned token starts (i.e. the next position that will be scanned).
      *
      * @param start the first character position in the document to consider
      * @param bound the first position not to consider any more
      * @return a constant from {@link Symbols} describing the previous token
      */
-    public int previousToken(int start, int bound) {
-        int pos= scanBackward(start, bound, fNonWSDefaultPart);
-        if (pos == NOT_FOUND)
+    public int previousToken(final int start, final int bound) {
+        int pos = scanBackward(start, bound, fNonWSDefaultPart);
+        if (pos == NOT_FOUND) {
             return TokenEOF;
+        }
 
         fPos--;
 
         switch (fChar) {
-            case LBRACE:
-                return TokenLBRACE;
-            case RBRACE:
-                return TokenRBRACE;
-            case LBRACKET:
-                return TokenLBRACKET;
-            case RBRACKET:
-                return TokenRBRACKET;
-            case LPAREN:
-                return TokenLPAREN;
-            case RPAREN:
-                return TokenRPAREN;
-            case SEMICOLON:
-                return TokenSEMICOLON;
+        case LBRACE:
+            return TokenLBRACE;
+        case RBRACE:
+            return TokenRBRACE;
+        case LBRACKET:
+            return TokenLBRACKET;
+        case RBRACKET:
+            return TokenRBRACKET;
+        case LPAREN:
+            return TokenLPAREN;
+        case RPAREN:
+            return TokenRPAREN;
+        case SEMICOLON:
+            return TokenSEMICOLON;
+        case COLON:
+            switch (peekPreviousChar()) {
             case COLON:
-                switch (peekPreviousChar()) {
-                case COLON:
-                    --fPos;
-                    return TokenDOUBLECOLON;
-                }
-                return TokenCOLON;
-            case COMMA:
-                return TokenCOMMA;
-            case QUESTIONMARK:
-                return TokenQUESTIONMARK;
-            case EQUAL:
-                switch (peekPreviousChar()) {
-                case RANGLE:
-                case LANGLE:
-                    --fPos;
-                    return TokenOTHER;
-                }
-                return TokenEQUAL;
-            case LANGLE:
-                switch (peekPreviousChar()) {
-                case LANGLE:
-                    --fPos;
-                    return TokenSHIFTLEFT;
-                }
-                return TokenLESSTHAN;
+                --fPos;
+                return TokenDOUBLECOLON;
+            }
+            return TokenCOLON;
+        case COMMA:
+            return TokenCOMMA;
+        case QUESTIONMARK:
+            return TokenQUESTIONMARK;
+        case EQUAL:
+            switch (peekPreviousChar()) {
             case RANGLE:
-                switch (peekPreviousChar()) {
-                case RANGLE:
-                    --fPos;
-                    return TokenSHIFTRIGHT;
-                case MINUS:
-                    --fPos;
-                    return TokenARROW;
-                }
-                return TokenGREATERTHAN;
-            case DOT:
-                return TokenDOT;
+            case LANGLE:
+                --fPos;
+                return TokenOTHER;
+            }
+            return TokenEQUAL;
+        case LANGLE:
+            switch (peekPreviousChar()) {
+            case LANGLE:
+                --fPos;
+                return TokenSHIFTLEFT;
+            }
+            return TokenLESSTHAN;
+        case RANGLE:
+            switch (peekPreviousChar()) {
+            case RANGLE:
+                --fPos;
+                return TokenSHIFTRIGHT;
             case MINUS:
-                return TokenMINUS;
-            case PLUS:
-                return TokenPLUS;
-            case TILDE:
-                return TokenTILDE;
+                --fPos;
+                return TokenARROW;
+            }
+            return TokenGREATERTHAN;
+        case DOT:
+            return TokenDOT;
+        case MINUS:
+            return TokenMINUS;
+        case PLUS:
+            return TokenPLUS;
+        case TILDE:
+            return TokenTILDE;
         }
 
         // else
         if (Character.isJavaIdentifierPart(fChar)) {
             // assume an ident or keyword
-            int from, to= pos + 1;
-            pos= scanBackward(pos - 1, bound, fNonIdent);
-            if (pos == NOT_FOUND)
-                from= bound == UNBOUND ? 0 : bound + 1;
-            else
-                from= pos + 1;
+            int from;
+            final int to = pos + 1;
+            pos = scanBackward(pos - 1, bound, fNonIdent);
+            if (pos == NOT_FOUND) {
+                from = bound == UNBOUND ? 0 : bound + 1;
+            } else {
+                from = pos + 1;
+            }
 
             String identOrKeyword;
             try {
-                identOrKeyword= fDocument.get(from, to - from);
-            } catch (BadLocationException e) {
+                identOrKeyword = fDocument.get(from, to - from);
+            } catch (final BadLocationException e) {
                 return TokenEOF;
             }
 
@@ -526,10 +544,10 @@ public final class CHeuristicScanner implements Symbols {
         if (fPos + 1 < fDocument.getLength()) {
             try {
                 return fDocument.getChar(fPos + 1);
-            } catch (BadLocationException exc) {
+            } catch (final BadLocationException exc) {
             }
         }
-        return (char)-1;
+        return (char) -1;
     }
 
     /**
@@ -539,10 +557,10 @@ public final class CHeuristicScanner implements Symbols {
         if (fPos >= 0) {
             try {
                 return fDocument.getChar(fPos);
-            } catch (BadLocationException e) {
+            } catch (final BadLocationException e) {
             }
         }
-        return (char)-1;
+        return (char) -1;
     }
 
     /**
@@ -551,388 +569,474 @@ public final class CHeuristicScanner implements Symbols {
      * @param s a scanned identifier
      * @return one of the constants defined in {@link Symbols}
      */
-    private int getToken(String s) {
+    private int getToken(final String s) {
         Assert.isNotNull(s);
 
         switch (s.length()) {
-            case 2:
-                if ("if".equals(s)) //$NON-NLS-1$
-                    return TokenIF;
-                if ("do".equals(s)) //$NON-NLS-1$
-                    return TokenDO;
-                break;
-            case 3:
-                if ("for".equals(s)) //$NON-NLS-1$
-                    return TokenFOR;
-                if ("try".equals(s)) //$NON-NLS-1$
-                    return TokenTRY;
-                if ("new".equals(s)) //$NON-NLS-1$
-                    return TokenNEW;
-                break;
-            case 4:
-                if ("case".equals(s)) //$NON-NLS-1$
-                    return TokenCASE;
-                if ("else".equals(s)) //$NON-NLS-1$
-                    return TokenELSE;
-                if ("enum".equals(s)) //$NON-NLS-1$
-                    return TokenENUM;
-                if ("goto".equals(s)) //$NON-NLS-1$
-                    return TokenGOTO;
-                break;
-            case 5:
-                if ("break".equals(s)) //$NON-NLS-1$
-                    return TokenBREAK;
-                if ("catch".equals(s)) //$NON-NLS-1$
-                    return TokenCATCH;
-                if ("class".equals(s)) //$NON-NLS-1$
-                    return TokenCLASS;
-                if ("const".equals(s)) //$NON-NLS-1$
-                    return TokenCONST;
-                if ("while".equals(s)) //$NON-NLS-1$
-                    return TokenWHILE;
-                if ("union".equals(s)) //$NON-NLS-1$
-                    return TokenUNION;
-                if ("using".equals(s)) //$NON-NLS-1$
-                    return TokenUSING;
-                if ("throw".equals(s)) //$NON-NLS-1$
-                    return TokenTHROW;
-                break;
-            case 6:
-                if ("delete".equals(s)) //$NON-NLS-1$
-                    return TokenDELETE;
-                if ("public".equals(s)) //$NON-NLS-1$
-                    return TokenPUBLIC;
-                if ("return".equals(s)) //$NON-NLS-1$
-                    return TokenRETURN;
-                if ("static".equals(s)) //$NON-NLS-1$
-                    return TokenSTATIC;
-                if ("struct".equals(s)) //$NON-NLS-1$
-                    return TokenSTRUCT;
-                if ("switch".equals(s)) //$NON-NLS-1$
-                    return TokenSWITCH;
-                if ("extern".equals(s)) //$NON-NLS-1$
-                    return TokenEXTERN;
-                break;
-            case 7:
-                if ("default".equals(s)) //$NON-NLS-1$
-                    return TokenDEFAULT;
-                if ("private".equals(s)) //$NON-NLS-1$
-                    return TokenPRIVATE;
-                if ("typedef".equals(s)) //$NON-NLS-1$
-                    return TokenTYPEDEF;
-                if ("virtual".equals(s)) //$NON-NLS-1$
-                    return TokenVIRTUAL;
-                break;
-            case 8:
-                if ("operator".equals(s)) //$NON-NLS-1$
-                    return TokenOPERATOR;
-                if ("template".equals(s)) //$NON-NLS-1$
-                    return TokenTEMPLATE;
-                if ("typename".equals(s)) //$NON-NLS-1$
-                    return TokenTYPENAME;
-                break;
-            case 9:
-                if ("namespace".equals(s)) //$NON-NLS-1$
-                    return TokenNAMESPACE;
-                if ("protected".equals(s)) //$NON-NLS-1$
-                    return TokenPROTECTED;
+        case 2:
+            if ("if".equals(s)) { //$NON-NLS-1$
+                return TokenIF;
+            }
+            if ("do".equals(s)) { //$NON-NLS-1$
+                return TokenDO;
+            }
+            break;
+        case 3:
+            if ("for".equals(s)) { //$NON-NLS-1$
+                return TokenFOR;
+            }
+            if ("try".equals(s)) { //$NON-NLS-1$
+                return TokenTRY;
+            }
+            if ("new".equals(s)) { //$NON-NLS-1$
+                return TokenNEW;
+            }
+            break;
+        case 4:
+            if ("case".equals(s)) { //$NON-NLS-1$
+                return TokenCASE;
+            }
+            if ("else".equals(s)) { //$NON-NLS-1$
+                return TokenELSE;
+            }
+            if ("enum".equals(s)) { //$NON-NLS-1$
+                return TokenENUM;
+            }
+            if ("goto".equals(s)) { //$NON-NLS-1$
+                return TokenGOTO;
+            }
+            break;
+        case 5:
+            if ("break".equals(s)) { //$NON-NLS-1$
+                return TokenBREAK;
+            }
+            if ("catch".equals(s)) { //$NON-NLS-1$
+                return TokenCATCH;
+            }
+            if ("class".equals(s)) { //$NON-NLS-1$
+                return TokenCLASS;
+            }
+            if ("const".equals(s)) { //$NON-NLS-1$
+                return TokenCONST;
+            }
+            if ("while".equals(s)) { //$NON-NLS-1$
+                return TokenWHILE;
+            }
+            if ("union".equals(s)) { //$NON-NLS-1$
+                return TokenUNION;
+            }
+            if ("using".equals(s)) { //$NON-NLS-1$
+                return TokenUSING;
+            }
+            if ("throw".equals(s)) { //$NON-NLS-1$
+                return TokenTHROW;
+            }
+            break;
+        case 6:
+            if ("delete".equals(s)) { //$NON-NLS-1$
+                return TokenDELETE;
+            }
+            if ("public".equals(s)) { //$NON-NLS-1$
+                return TokenPUBLIC;
+            }
+            if ("return".equals(s)) { //$NON-NLS-1$
+                return TokenRETURN;
+            }
+            if ("static".equals(s)) { //$NON-NLS-1$
+                return TokenSTATIC;
+            }
+            if ("struct".equals(s)) { //$NON-NLS-1$
+                return TokenSTRUCT;
+            }
+            if ("switch".equals(s)) { //$NON-NLS-1$
+                return TokenSWITCH;
+            }
+            if ("extern".equals(s)) { //$NON-NLS-1$
+                return TokenEXTERN;
+            }
+            break;
+        case 7:
+            if ("default".equals(s)) { //$NON-NLS-1$
+                return TokenDEFAULT;
+            }
+            if ("private".equals(s)) { //$NON-NLS-1$
+                return TokenPRIVATE;
+            }
+            if ("typedef".equals(s)) { //$NON-NLS-1$
+                return TokenTYPEDEF;
+            }
+            if ("virtual".equals(s)) { //$NON-NLS-1$
+                return TokenVIRTUAL;
+            }
+            break;
+        case 8:
+            if ("operator".equals(s)) { //$NON-NLS-1$
+                return TokenOPERATOR;
+            }
+            if ("template".equals(s)) { //$NON-NLS-1$
+                return TokenTEMPLATE;
+            }
+            if ("typename".equals(s)) { //$NON-NLS-1$
+                return TokenTYPENAME;
+            }
+            break;
+        case 9:
+            if ("namespace".equals(s)) { //$NON-NLS-1$
+                return TokenNAMESPACE;
+            }
+            if ("protected".equals(s)) { //$NON-NLS-1$
+                return TokenPROTECTED;
+            }
         }
         return TokenIDENT;
     }
 
     /**
-     * Returns the position of the closing peer character (forward search). Any scopes introduced
-     * by opening peers are skipped. All peers accounted for must reside in the default partition.
+     * Returns the position of the closing peer character (forward search). Any scopes introduced by
+     * opening peers are skipped. All peers accounted for must reside in the default partition.
      *
-     * <p>Note that <code>start</code> must not point to the opening peer, but to the first
-     * character being searched.</p>
+     * <p>
+     * Note that <code>start</code> must not point to the opening peer, but to the first character being
+     * searched.
+     * </p>
      *
-     * @param start the start position
+     * @param start       the start position
      * @param openingPeer the opening peer character (e.g. '{')
      * @param closingPeer the closing peer character (e.g. '}')
      * @return the matching peer character position, or <code>NOT_FOUND</code>
      */
-    public int findClosingPeer(int start, final char openingPeer, final char closingPeer) {
+    public int findClosingPeer(final int start, final char openingPeer, final char closingPeer) {
         return findClosingPeer(start, UNBOUND, openingPeer, closingPeer);
     }
 
     /**
-     * Returns the position of the closing peer character (forward search). Any scopes introduced by opening peers
-     * are skipped. All peers accounted for must reside in the default partition.
+     * Returns the position of the closing peer character (forward search). Any scopes introduced by
+     * opening peers are skipped. All peers accounted for must reside in the default partition.
      *
-     * <p>Note that <code>start</code> must not point to the opening peer, but to the first
-     * character being searched.</p>
+     * <p>
+     * Note that <code>start</code> must not point to the opening peer, but to the first character being
+     * searched.
+     * </p>
      *
-     * @param start the start position
-     * @param bound the bound
+     * @param start       the start position
+     * @param bound       the bound
      * @param openingPeer the opening peer character (e.g. '{')
      * @param closingPeer the closing peer character (e.g. '}')
      * @return the matching peer character position, or <code>NOT_FOUND</code>
      */
-    public int findClosingPeer(int start, int bound, final char openingPeer, final char closingPeer) {
+    public int findClosingPeer(int start, final int bound, final char openingPeer, final char closingPeer) {
         Assert.isLegal(start >= 0);
 
         try {
-            int depth= 1;
+            int depth = 1;
             start -= 1;
             while (true) {
-                start= scanForward(start + 1, bound, new CharacterMatch(new char[] {openingPeer, closingPeer}));
-                if (start == NOT_FOUND)
+                start = scanForward(start + 1, bound, new CharacterMatch(new char[] { openingPeer, closingPeer }));
+                if (start == NOT_FOUND) {
                     return NOT_FOUND;
+                }
 
-                if (fDocument.getChar(start) == openingPeer)
+                if (fDocument.getChar(start) == openingPeer) {
                     depth++;
-                else
+                } else {
                     depth--;
+                }
 
-                if (depth == 0)
+                if (depth == 0) {
                     return start;
+                }
             }
 
-        } catch (BadLocationException e) {
+        } catch (final BadLocationException e) {
             return NOT_FOUND;
         }
     }
 
     /**
-     * Returns the position of the opening peer character (backward search). Any scopes introduced by closing peers
-     * are skipped. All peers accounted for must reside in the default partition.
+     * Returns the position of the opening peer character (backward search). Any scopes introduced by
+     * closing peers are skipped. All peers accounted for must reside in the default partition.
      *
-     * <p>Note that <code>start</code> must not point to the closing peer, but to the first
-     * character being searched.</p>
+     * <p>
+     * Note that <code>start</code> must not point to the closing peer, but to the first character being
+     * searched.
+     * </p>
      *
-     * @param start the start position
+     * @param start       the start position
      * @param openingPeer the opening peer character (e.g. '{')
      * @param closingPeer the closing peer character (e.g. '}')
      * @return the matching peer character position, or <code>NOT_FOUND</code>
      */
-    public int findOpeningPeer(int start, char openingPeer, char closingPeer) {
+    public int findOpeningPeer(final int start, final char openingPeer, final char closingPeer) {
         return findOpeningPeer(start, CHeuristicScanner.UNBOUND, openingPeer, closingPeer);
     }
 
     /**
-     * Returns the position of the opening peer character (backward search). Any scopes introduced by closing peers
-     * are skipped. All peers accounted for must reside in the default partition.
+     * Returns the position of the opening peer character (backward search). Any scopes introduced by
+     * closing peers are skipped. All peers accounted for must reside in the default partition.
      *
-     * <p>Note that <code>start</code> must not point to the closing peer, but to the first
-     * character being searched.</p>
+     * <p>
+     * Note that <code>start</code> must not point to the closing peer, but to the first character being
+     * searched.
+     * </p>
      *
-     * @param start the start position
-     * @param bound the bound
+     * @param start       the start position
+     * @param bound       the bound
      * @param openingPeer the opening peer character (e.g. '{')
      * @param closingPeer the closing peer character (e.g. '}')
      * @return the matching peer character position, or <code>NOT_FOUND</code>
      */
-    public int findOpeningPeer(int start, int bound, char openingPeer, char closingPeer) {
+    public int findOpeningPeer(int start, final int bound, final char openingPeer, final char closingPeer) {
         Assert.isLegal(start < fDocument.getLength());
 
         try {
-            final CharacterMatch match= new CharacterMatch(new char[] {openingPeer, closingPeer});
-            int depth= 1;
+            final CharacterMatch match = new CharacterMatch(new char[] { openingPeer, closingPeer });
+            int depth = 1;
             start += 1;
             while (true) {
-                start= scanBackward(start - 1, bound, match);
-                if (start == NOT_FOUND)
+                start = scanBackward(start - 1, bound, match);
+                if (start == NOT_FOUND) {
                     return NOT_FOUND;
+                }
 
-                if (fDocument.getChar(start) == closingPeer)
+                if (fDocument.getChar(start) == closingPeer) {
                     depth++;
-                else
+                } else {
                     depth--;
+                }
 
-                if (depth == 0)
+                if (depth == 0) {
                     return start;
+                }
             }
 
-        } catch (BadLocationException e) {
+        } catch (final BadLocationException e) {
             return NOT_FOUND;
         }
     }
 
     /**
-     * Computes the surrounding block around <code>offset</code>. The search is started at the
-     * beginning of <code>offset</code>, i.e. an opening brace at <code>offset</code> will not be
-     * part of the surrounding block, but a closing brace will.
+     * Computes the surrounding block around <code>offset</code>. The search is started at the beginning
+     * of <code>offset</code>, i.e. an opening brace at <code>offset</code> will not be part of the
+     * surrounding block, but a closing brace will.
      *
      * @param offset the offset for which the surrounding block is computed
      * @return a region describing the surrounding block, or <code>null</code> if none can be found
      */
-    public IRegion findSurroundingBlock(int offset) {
-        if (offset < 1 || offset >= fDocument.getLength())
+    public IRegion findSurroundingBlock(final int offset) {
+        if (offset < 1 || offset >= fDocument.getLength()) {
             return null;
+        }
 
-        int begin= findOpeningPeer(offset - 1, CHeuristicScanner.UNBOUND, LBRACE, RBRACE);
-        int end= findClosingPeer(offset, UNBOUND, LBRACE, RBRACE);
-        if (begin == NOT_FOUND || end == NOT_FOUND)
+        final int begin = findOpeningPeer(offset - 1, CHeuristicScanner.UNBOUND, LBRACE, RBRACE);
+        final int end = findClosingPeer(offset, UNBOUND, LBRACE, RBRACE);
+        if (begin == NOT_FOUND || end == NOT_FOUND) {
             return null;
+        }
         return new Region(begin, end + 1 - begin);
     }
 
     /**
-     * Finds the smallest position in <code>fDocument</code> such that the position is &gt;= <code>position</code>
-     * and &lt; <code>bound</code> and <code>Character.isWhitespace(fDocument.getChar(pos))</code> evaluates to <code>false</code>
-     * and the position is in the default partition.
+     * Finds the smallest position in <code>fDocument</code> such that the position is &gt;=
+     * <code>position</code> and &lt; <code>bound</code> and
+     * <code>Character.isWhitespace(fDocument.getChar(pos))</code> evaluates to <code>false</code> and
+     * the position is in the default partition.
      *
      * @param position the first character position in <code>fDocument</code> to be considered
-     * @param bound the first position in <code>fDocument</code> to not consider any more, with <code>bound</code> &gt; <code>position</code>, or <code>UNBOUND</code>
-     * @return the smallest position of a non-whitespace character in [<code>position</code>, <code>bound</code>) that resides in a C partition, or <code>NOT_FOUND</code> if none can be found
+     * @param bound    the first position in <code>fDocument</code> to not consider any more, with
+     *                 <code>bound</code> &gt; <code>position</code>, or <code>UNBOUND</code>
+     * @return the smallest position of a non-whitespace character in [<code>position</code>,
+     *         <code>bound</code>) that resides in a C partition, or <code>NOT_FOUND</code> if none can
+     *         be found
      */
-    public int findNonWhitespaceForward(int position, int bound) {
+    public int findNonWhitespaceForward(final int position, final int bound) {
         return scanForward(position, bound, fNonWSDefaultPart);
     }
 
     /**
-     * Finds the smallest position in <code>fDocument</code> such that the position is &gt;= <code>position</code>
-     * and &lt; <code>bound</code> and <code>Character.isWhitespace(fDocument.getChar(pos))</code> evaluates to <code>false</code>.
+     * Finds the smallest position in <code>fDocument</code> such that the position is &gt;=
+     * <code>position</code> and &lt; <code>bound</code> and
+     * <code>Character.isWhitespace(fDocument.getChar(pos))</code> evaluates to <code>false</code>.
      *
      * @param position the first character position in <code>fDocument</code> to be considered
-     * @param bound the first position in <code>fDocument</code> to not consider any more, with <code>bound</code> &gt; <code>position</code>, or <code>UNBOUND</code>
-     * @return the smallest position of a non-whitespace character in [<code>position</code>, <code>bound</code>), or <code>NOT_FOUND</code> if none can be found
+     * @param bound    the first position in <code>fDocument</code> to not consider any more, with
+     *                 <code>bound</code> &gt; <code>position</code>, or <code>UNBOUND</code>
+     * @return the smallest position of a non-whitespace character in [<code>position</code>,
+     *         <code>bound</code>), or <code>NOT_FOUND</code> if none can be found
      */
-    public int findNonWhitespaceForwardInAnyPartition(int position, int bound) {
+    public int findNonWhitespaceForwardInAnyPartition(final int position, final int bound) {
         return scanForward(position, bound, fNonWS);
     }
 
     /**
-     * Finds the highest position in <code>fDocument</code> such that the position is &lt;= <code>position</code>
-     * and &gt; <code>bound</code> and <code>Character.isWhitespace(fDocument.getChar(pos))</code> evaluates to <code>false</code>
-     * and the position is in the default partition.
+     * Finds the highest position in <code>fDocument</code> such that the position is &lt;=
+     * <code>position</code> and &gt; <code>bound</code> and
+     * <code>Character.isWhitespace(fDocument.getChar(pos))</code> evaluates to <code>false</code> and
+     * the position is in the default partition.
      *
      * @param position the first character position in <code>fDocument</code> to be considered
-     * @param bound the first position in <code>fDocument</code> to not consider any more, with <code>bound</code> &lt; <code>position</code>, or <code>UNBOUND</code>
-     * @return the highest position of a non-whitespace character in (<code>bound</code>, <code>position</code>] that resides in a C partition, or <code>NOT_FOUND</code> if none can be found
+     * @param bound    the first position in <code>fDocument</code> to not consider any more, with
+     *                 <code>bound</code> &lt; <code>position</code>, or <code>UNBOUND</code>
+     * @return the highest position of a non-whitespace character in (<code>bound</code>,
+     *         <code>position</code>] that resides in a C partition, or <code>NOT_FOUND</code> if none
+     *         can be found
      */
-    public int findNonWhitespaceBackward(int position, int bound) {
+    public int findNonWhitespaceBackward(final int position, final int bound) {
         return scanBackward(position, bound, fNonWSDefaultPart);
     }
 
     /**
-     * Finds the lowest position <code>p</code> in <code>fDocument</code> such that <code>start</code> &lt;= p &lt;
-     * <code>bound</code> and <code>condition.stop(fDocument.getChar(p), p)</code> evaluates to <code>true</code>.
+     * Finds the lowest position <code>p</code> in <code>fDocument</code> such that <code>start</code>
+     * &lt;= p &lt; <code>bound</code> and <code>condition.stop(fDocument.getChar(p), p)</code>
+     * evaluates to <code>true</code>.
      *
-     * @param start the first character position in <code>fDocument</code> to be considered
-     * @param bound the first position in <code>fDocument</code> to not consider any more, with <code>bound</code> &gt; <code>start</code>, or <code>UNBOUND</code>
+     * @param start     the first character position in <code>fDocument</code> to be considered
+     * @param bound     the first position in <code>fDocument</code> to not consider any more, with
+     *                  <code>bound</code> &gt; <code>start</code>, or <code>UNBOUND</code>
      * @param condition the <code>StopCondition</code> to check
-     * @return the lowest position in [<code>start</code>, <code>bound</code>) for which <code>condition</code> holds, or <code>NOT_FOUND</code> if none can be found
+     * @return the lowest position in [<code>start</code>, <code>bound</code>) for which
+     *         <code>condition</code> holds, or <code>NOT_FOUND</code> if none can be found
      */
-    public int scanForward(int start, int bound, StopCondition condition) {
+    public int scanForward(final int start, int bound, final StopCondition condition) {
         Assert.isLegal(start >= 0);
 
-        if (bound == UNBOUND)
-            bound= fDocument.getLength();
+        if (bound == UNBOUND) {
+            bound = fDocument.getLength();
+        }
 
         Assert.isLegal(bound <= fDocument.getLength());
 
         try {
-            fPos= start;
+            fPos = start;
             while (fPos < bound) {
 
-                fChar= fDocument.getChar(fPos);
-                if (condition.stop(fChar, fPos, true))
+                fChar = fDocument.getChar(fPos);
+                if (condition.stop(fChar, fPos, true)) {
                     return fPos;
+                }
 
-                fPos= condition.nextPosition(fPos, true);
+                fPos = condition.nextPosition(fPos, true);
             }
-        } catch (BadLocationException e) {
+        } catch (final BadLocationException e) {
         }
         return NOT_FOUND;
     }
 
-
     /**
-     * Finds the lowest position in <code>fDocument</code> such that the position is &gt;= <code>position</code>
-     * and &lt; <code>bound</code> and <code>fDocument.getChar(position) == ch</code> evaluates to <code>true</code>
-     * and the position is in the default partition.
+     * Finds the lowest position in <code>fDocument</code> such that the position is &gt;=
+     * <code>position</code> and &lt; <code>bound</code> and
+     * <code>fDocument.getChar(position) == ch</code> evaluates to <code>true</code> and the position is
+     * in the default partition.
      *
      * @param position the first character position in <code>fDocument</code> to be considered
-     * @param bound the first position in <code>fDocument</code> to not consider any more, with <code>bound</code> &gt; <code>position</code>, or <code>UNBOUND</code>
-     * @param ch the <code>char</code> to search for
-     * @return the lowest position of <code>ch</code> in (<code>bound</code>, <code>position</code>] that resides in a C partition, or <code>NOT_FOUND</code> if none can be found
+     * @param bound    the first position in <code>fDocument</code> to not consider any more, with
+     *                 <code>bound</code> &gt; <code>position</code>, or <code>UNBOUND</code>
+     * @param ch       the <code>char</code> to search for
+     * @return the lowest position of <code>ch</code> in (<code>bound</code>, <code>position</code>]
+     *         that resides in a C partition, or <code>NOT_FOUND</code> if none can be found
      */
-    public int scanForward(int position, int bound, char ch) {
+    public int scanForward(final int position, final int bound, final char ch) {
         return scanForward(position, bound, new CharacterMatch(ch));
     }
 
     /**
-     * Finds the lowest position in <code>fDocument</code> such that the position is &gt;= <code>position</code>
-     * and &lt; <code>bound</code> and <code>fDocument.getChar(position) == ch</code> evaluates to <code>true</code> for at least one
-     * ch in <code>chars</code> and the position is in the default partition.
+     * Finds the lowest position in <code>fDocument</code> such that the position is &gt;=
+     * <code>position</code> and &lt; <code>bound</code> and
+     * <code>fDocument.getChar(position) == ch</code> evaluates to <code>true</code> for at least one ch
+     * in <code>chars</code> and the position is in the default partition.
      *
      * @param position the first character position in <code>fDocument</code> to be considered
-     * @param bound the first position in <code>fDocument</code> to not consider any more, with <code>bound</code> &gt; <code>position</code>, or <code>UNBOUND</code>
-     * @param chars an array of <code>char</code> to search for
-     * @return the lowest position of a non-whitespace character in [<code>position</code>, <code>bound</code>) that resides in a C partition, or <code>NOT_FOUND</code> if none can be found
+     * @param bound    the first position in <code>fDocument</code> to not consider any more, with
+     *                 <code>bound</code> &gt; <code>position</code>, or <code>UNBOUND</code>
+     * @param chars    an array of <code>char</code> to search for
+     * @return the lowest position of a non-whitespace character in [<code>position</code>,
+     *         <code>bound</code>) that resides in a C partition, or <code>NOT_FOUND</code> if none can
+     *         be found
      */
-    public int scanForward(int position, int bound, char[] chars) {
+    public int scanForward(final int position, final int bound, final char[] chars) {
         return scanForward(position, bound, new CharacterMatch(chars));
     }
 
     /**
-     * Finds the highest position <code>p</code> in <code>fDocument</code> such that <code>bound</code> &lt; <code>p</code> &lt;= <code>start</code>
-     * and <code>condition.stop(fDocument.getChar(p), p)</code> evaluates to <code>true</code>.
+     * Finds the highest position <code>p</code> in <code>fDocument</code> such that <code>bound</code>
+     * &lt; <code>p</code> &lt;= <code>start</code> and
+     * <code>condition.stop(fDocument.getChar(p), p)</code> evaluates to <code>true</code>.
      *
-     * @param start the first character position in <code>fDocument</code> to be considered
-     * @param bound the first position in <code>fDocument</code> to not consider any more, with <code>bound</code> &lt; <code>start</code>, or <code>UNBOUND</code>
+     * @param start     the first character position in <code>fDocument</code> to be considered
+     * @param bound     the first position in <code>fDocument</code> to not consider any more, with
+     *                  <code>bound</code> &lt; <code>start</code>, or <code>UNBOUND</code>
      * @param condition the <code>StopCondition</code> to check
-     * @return the highest position in (<code>bound</code>, <code>start</code> for which <code>condition</code> holds, or <code>NOT_FOUND</code> if none can be found
+     * @return the highest position in (<code>bound</code>, <code>start</code> for which
+     *         <code>condition</code> holds, or <code>NOT_FOUND</code> if none can be found
      */
-    public int scanBackward(int start, int bound, StopCondition condition) {
-        if (bound == UNBOUND)
-            bound= -1;
+    public int scanBackward(final int start, int bound, final StopCondition condition) {
+        if (bound == UNBOUND) {
+            bound = -1;
+        }
 
         Assert.isLegal(bound >= -1);
-        Assert.isLegal(start < fDocument.getLength() );
+        Assert.isLegal(start < fDocument.getLength());
 
         try {
-            fPos= start;
+            fPos = start;
             while (fPos > bound) {
 
-                fChar= fDocument.getChar(fPos);
-                if (condition.stop(fChar, fPos, false))
+                fChar = fDocument.getChar(fPos);
+                if (condition.stop(fChar, fPos, false)) {
                     return fPos;
+                }
 
-                fPos= condition.nextPosition(fPos, false);
+                fPos = condition.nextPosition(fPos, false);
             }
-        } catch (BadLocationException e) {
+        } catch (final BadLocationException e) {
         }
         return NOT_FOUND;
     }
 
     /**
-     * Finds the highest position in <code>fDocument</code> such that the position is &lt;= <code>position</code>
-     * and &gt; <code>bound</code> and <code>fDocument.getChar(position) == ch</code> evaluates to <code>true</code>
-     * and the position is in the default partition.
+     * Finds the highest position in <code>fDocument</code> such that the position is &lt;=
+     * <code>position</code> and &gt; <code>bound</code> and
+     * <code>fDocument.getChar(position) == ch</code> evaluates to <code>true</code> and the position is
+     * in the default partition.
      *
      * @param position the first character position in <code>fDocument</code> to be considered
-     * @param bound the first position in <code>fDocument</code> to not consider any more, with <code>bound</code> &lt; <code>position</code>, or <code>UNBOUND</code>
-     * @param ch the <code>char</code> to search for
-     * @return the highest position of one element in <code>chars</code> in (<code>bound</code>, <code>position</code>] that resides in a C partition, or <code>NOT_FOUND</code> if none can be found
+     * @param bound    the first position in <code>fDocument</code> to not consider any more, with
+     *                 <code>bound</code> &lt; <code>position</code>, or <code>UNBOUND</code>
+     * @param ch       the <code>char</code> to search for
+     * @return the highest position of one element in <code>chars</code> in (<code>bound</code>,
+     *         <code>position</code>] that resides in a C partition, or <code>NOT_FOUND</code> if none
+     *         can be found
      */
-    public int scanBackward(int position, int bound, char ch) {
+    public int scanBackward(final int position, final int bound, final char ch) {
         return scanBackward(position, bound, new CharacterMatch(ch));
     }
 
     /**
-     * Finds the highest position in <code>fDocument</code> such that the position is &lt;= <code>position</code>
-     * and &gt; <code>bound</code> and <code>fDocument.getChar(position) == ch</code> evaluates to <code>true</code> for at least one
-     * ch in <code>chars</code> and the position is in the default partition.
+     * Finds the highest position in <code>fDocument</code> such that the position is &lt;=
+     * <code>position</code> and &gt; <code>bound</code> and
+     * <code>fDocument.getChar(position) == ch</code> evaluates to <code>true</code> for at least one ch
+     * in <code>chars</code> and the position is in the default partition.
      *
      * @param position the first character position in <code>fDocument</code> to be considered
-     * @param bound the first position in <code>fDocument</code> to not consider any more, with <code>bound</code> &lt; <code>position</code>, or <code>UNBOUND</code>
-     * @param chars an array of <code>char</code> to search for
-     * @return the highest position of one element in <code>chars</code> in (<code>bound</code>, <code>position</code>] that resides in a C partition, or <code>NOT_FOUND</code> if none can be found
+     * @param bound    the first position in <code>fDocument</code> to not consider any more, with
+     *                 <code>bound</code> &lt; <code>position</code>, or <code>UNBOUND</code>
+     * @param chars    an array of <code>char</code> to search for
+     * @return the highest position of one element in <code>chars</code> in (<code>bound</code>,
+     *         <code>position</code>] that resides in a C partition, or <code>NOT_FOUND</code> if none
+     *         can be found
      */
-    public int scanBackward(int position, int bound, char[] chars) {
+    public int scanBackward(final int position, final int bound, final char[] chars) {
         return scanBackward(position, bound, new CharacterMatch(chars));
     }
 
     /**
-     * Checks whether <code>position</code> resides in a default (C) partition of <code>fDocument</code>.
+     * Checks whether <code>position</code> resides in a default (C) partition of
+     * <code>fDocument</code>.
      *
      * @param position the position to be checked
-     * @return <code>true</code> if <code>position</code> is in the default partition of <code>fDocument</code>, <code>false</code> otherwise
+     * @return <code>true</code> if <code>position</code> is in the default partition of
+     *         <code>fDocument</code>, <code>false</code> otherwise
      */
-    public boolean isDefaultPartition(int position) {
+    public boolean isDefaultPartition(final int position) {
         return fPartition.equals(getPartition(position).getType());
     }
 
@@ -940,18 +1044,18 @@ public final class CHeuristicScanner implements Symbols {
      * Returns the partition at <code>position</code>.
      *
      * @param position the position to get the partition for
-     * @return the partition at <code>position</code> or a dummy zero-length
-     *         partition if accessing the document fails
+     * @return the partition at <code>position</code> or a dummy zero-length partition if accessing the
+     *         document fails
      */
-    private ITypedRegion getPartition(int position) {
+    private ITypedRegion getPartition(final int position) {
         if (!contains(fCachedPartition, position)) {
             Assert.isTrue(position >= 0);
             Assert.isTrue(position <= fDocument.getLength());
-            
+
             try {
-                fCachedPartition= TextUtilities.getPartition(fDocument, fPartitioning, position, false);
-            } catch (BadLocationException e) {
-                fCachedPartition= new TypedRegion(position, 0, "__no_partition_at_all"); //$NON-NLS-1$
+                fCachedPartition = TextUtilities.getPartition(fDocument, fPartitioning, position, false);
+            } catch (final BadLocationException e) {
+                fCachedPartition = new TypedRegion(position, 0, "__no_partition_at_all"); //$NON-NLS-1$
             }
         }
 
@@ -961,60 +1065,64 @@ public final class CHeuristicScanner implements Symbols {
     /**
      * Returns <code>true</code> if <code>region</code> contains <code>position</code>.
      * 
-     * @param region a region
+     * @param region   a region
      * @param position an offset
      * @return <code>true</code> if <code>region</code> contains <code>position</code>
      */
-    private boolean contains(IRegion region, int position) {
-        int offset= region.getOffset();
+    private boolean contains(final IRegion region, final int position) {
+        final int offset = region.getOffset();
         return offset <= position && position < offset + region.getLength();
     }
 
     /**
-     * Checks if the line seems to be an open condition not followed by a block (i.e. an if, while,
-     * or for statement with just one following statement, see example below).
+     * Checks if the line seems to be an open condition not followed by a block (i.e. an if, while, or
+     * for statement with just one following statement, see example below).
      *
      * <pre>
      * if (condition)
      *     doStuff();
      * </pre>
      *
-     * <p>Algorithm: if the last non-WS, non-Comment code on the line is an if (condition), while (condition),
-     * for( expression), do, else, and there is no statement after that </p>
+     * <p>
+     * Algorithm: if the last non-WS, non-Comment code on the line is an if (condition), while
+     * (condition), for( expression), do, else, and there is no statement after that
+     * </p>
      *
      * @param position the insert position of the new character
-     * @param bound the lowest position to consider
-     * @return <code>true</code> if the code is a conditional statement or loop without a block, <code>false</code> otherwise
+     * @param bound    the lowest position to consider
+     * @return <code>true</code> if the code is a conditional statement or loop without a block,
+     *         <code>false</code> otherwise
      */
-    public boolean isBracelessBlockStart(int position, int bound) {
-        if (position < 1)
+    public boolean isBracelessBlockStart(int position, final int bound) {
+        if (position < 1) {
             return false;
+        }
 
         switch (previousToken(position, bound)) {
-            case TokenDO:
-            case TokenELSE:
-                return true;
-            case TokenRPAREN:
-                position= findOpeningPeer(fPos, CHeuristicScanner.UNBOUND, LPAREN, RPAREN);
-                if (position > 0) {
-                    switch (previousToken(position - 1, bound)) {
-                        case TokenIF:
-                        case TokenFOR:
-                        case TokenWHILE:
-                            return true;
-                    }
+        case TokenDO:
+        case TokenELSE:
+            return true;
+        case TokenRPAREN:
+            position = findOpeningPeer(fPos, CHeuristicScanner.UNBOUND, LPAREN, RPAREN);
+            if (position > 0) {
+                switch (previousToken(position - 1, bound)) {
+                case TokenIF:
+                case TokenFOR:
+                case TokenWHILE:
+                    return true;
                 }
+            }
         }
 
         return false;
     }
-    
+
     /**
-     * Returns <code>true</code> if the document, when scanned backwards from <code>start</code>
-     * appears to contain a class instance creation, i.e. a possibly qualified name preceded by a
-     * <code>new</code> keyword. The <code>start</code> must be at the end of the type name, and
-     * before any generic signature or constructor parameter list. The heuristic will return
-     * <code>true</code> if <code>start</code> is at the following positions (|):
+     * Returns <code>true</code> if the document, when scanned backwards from <code>start</code> appears
+     * to contain a class instance creation, i.e. a possibly qualified name preceded by a
+     * <code>new</code> keyword. The <code>start</code> must be at the end of the type name, and before
+     * any generic signature or constructor parameter list. The heuristic will return <code>true</code>
+     * if <code>start</code> is at the following positions (|):
      * 
      * <pre>
      *  new std::vector&lt;std::string&gt;|(10)
@@ -1033,19 +1141,20 @@ public final class CHeuristicScanner implements Symbols {
      * 
      * @param start the position where the type name of the class instance creation supposedly ends
      * @param bound the first position in <code>fDocument</code> to not consider any more, with
-     *        <code>bound</code> &lt; <code>start</code>, or <code>UNBOUND</code>
+     *              <code>bound</code> &lt; <code>start</code>, or <code>UNBOUND</code>
      * @return <code>true</code> if the current position looks like after the type name of a class
      *         instance creation
      */
-    public boolean looksLikeClassInstanceCreationBackward(int start, int bound) {
-        int token= previousToken(start - 1, bound);
+    public boolean looksLikeClassInstanceCreationBackward(final int start, final int bound) {
+        int token = previousToken(start - 1, bound);
         if (token == Symbols.TokenIDENT) { // type name
-            token= previousToken(getPosition(), bound);
+            token = previousToken(getPosition(), bound);
             while (token == Symbols.TokenDOUBLECOLON) { // qualification
-                token= previousToken(getPosition(), bound);
-                if (token != Symbols.TokenIDENT) // qualification name
+                token = previousToken(getPosition(), bound);
+                if (token != Symbols.TokenIDENT) { // qualification name
                     return false;
-                token= previousToken(getPosition(), bound);
+                }
+                token = previousToken(getPosition(), bound);
             }
             return token == Symbols.TokenNEW;
         }
@@ -1053,34 +1162,32 @@ public final class CHeuristicScanner implements Symbols {
     }
 
     /**
-     * Returns <code>true</code> if the document, when scanned backwards from <code>start</code>
-     * appears to contain a field reference, i.e. a (optional) name preceded by a <code>.</code> 
-     * or <code>-&gt;</code> or <code>::</code>.
+     * Returns <code>true</code> if the document, when scanned backwards from <code>start</code> appears
+     * to contain a field reference, i.e. a (optional) name preceded by a <code>.</code> or
+     * <code>-&gt;</code> or <code>::</code>.
      * 
      * @param start the position after the field reference operator.
      * @param bound the first position in <code>fDocument</code> to not consider any more, with
-     *        <code>bound</code> &lt; <code>start</code>, or <code>UNBOUND</code>
+     *              <code>bound</code> &lt; <code>start</code>, or <code>UNBOUND</code>
      * @return <code>true</code> if the current position looks like a field reference
      */
-    public boolean looksLikeFieldReferenceBackward(int start, int bound) {
-        int token= previousToken(start - 1, bound);
+    public boolean looksLikeFieldReferenceBackward(final int start, final int bound) {
+        int token = previousToken(start - 1, bound);
         if (token == Symbols.TokenIDENT) { // field name
-            token= previousToken(getPosition(), bound);
+            token = previousToken(getPosition(), bound);
         }
         if (token == Symbols.TokenDOT) {
             return true;
         }
-        if (token == Symbols.TokenARROW) {
-            return true;
-        } else if (token == Symbols.TokenDOUBLECOLON) {
+        if ((token == Symbols.TokenARROW) || (token == Symbols.TokenDOUBLECOLON)) {
             return true;
         }
         return false;
     }
-    
+
     /**
-     * Returns <code>true</code> if the document, when scanned backwards from <code>start</code>
-     * appears to be a composite type (class, struct, union) or enum definition. Examples:
+     * Returns <code>true</code> if the document, when scanned backwards from <code>start</code> appears
+     * to be a composite type (class, struct, union) or enum definition. Examples:
      * 
      * <pre>
      * class A {
@@ -1092,18 +1199,18 @@ public final class CHeuristicScanner implements Symbols {
      * 
      * @param start the position of the opening brace.
      * @param bound the first position in <code>fDocument</code> to not consider any more, with
-     *        <code>bound</code> &lt; <code>start</code>, or <code>UNBOUND</code>
+     *              <code>bound</code> &lt; <code>start</code>, or <code>UNBOUND</code>
      * @return <code>true</code> if the current position looks like a composite type definition
      */
-    public boolean looksLikeCompositeTypeDefinitionBackward(int start, int bound) {
-        int token= previousToken(start - 1, bound);
+    public boolean looksLikeCompositeTypeDefinitionBackward(final int start, final int bound) {
+        int token = previousToken(start - 1, bound);
         switch (token) {
         case Symbols.TokenSTRUCT:
         case Symbols.TokenUNION:
         case Symbols.TokenENUM:
             return true; // anonymous
         case Symbols.TokenIDENT:
-            token= previousToken(getPosition(), bound);
+            token = previousToken(getPosition(), bound);
             switch (token) {
             case Symbols.TokenCLASS:
             case Symbols.TokenSTRUCT:
@@ -1112,74 +1219,76 @@ public final class CHeuristicScanner implements Symbols {
                 return true; // no base-clause
             default:
                 // backtrack
-                token= previousToken(start - 1, bound);
+                token = previousToken(start - 1, bound);
             }
             break;
         default:
             // backtrack
-            token= previousToken(start - 1, bound);
+            token = previousToken(start - 1, bound);
             break;
         }
         // match base-clause
         if (token == Symbols.TokenGREATERTHAN) {
             findOpeningPeer(getPosition(), bound, '<', '>');
-            token= previousToken(getPosition(), bound);
+            token = previousToken(getPosition(), bound);
             if (token != Symbols.TokenLESSTHAN) {
                 return false;
             }
-            token= previousToken(getPosition(), bound);
+            token = previousToken(getPosition(), bound);
         }
         outerWhile: while (token == Symbols.TokenIDENT) {// type name or base type
-            token= previousToken(getPosition(), bound);
+            token = previousToken(getPosition(), bound);
             // match nested-name-specifier
             while (token == Symbols.TokenCOLON) { // colon of qualification
-                token= previousToken(getPosition(), bound);
+                token = previousToken(getPosition(), bound);
                 if (token != Symbols.TokenCOLON) { // second colon of qualification
                     break outerWhile;
                 }
-                token= previousToken(getPosition(), bound);
-                if (token != Symbols.TokenIDENT) // qualification name?
+                token = previousToken(getPosition(), bound);
+                if (token != Symbols.TokenIDENT) { // qualification name?
                     break;
-                token= previousToken(getPosition(), bound);
+                }
+                token = previousToken(getPosition(), bound);
             }
             switch (token) {
             case Symbols.TokenVIRTUAL:
-                token= previousToken(getPosition(), bound);
+                token = previousToken(getPosition(), bound);
                 //$FALL-THROUGH$
             case Symbols.TokenPUBLIC:
             case Symbols.TokenPROTECTED:
             case Symbols.TokenPRIVATE:
-                token= previousToken(getPosition(), bound);
+                token = previousToken(getPosition(), bound);
                 if (token == Symbols.TokenVIRTUAL) {
-                    token= previousToken(getPosition(), bound);
+                    token = previousToken(getPosition(), bound);
                 }
                 if (token == Symbols.TokenCOMMA) {
-                    token= previousToken(getPosition(), bound);
+                    token = previousToken(getPosition(), bound);
                     if (token == Symbols.TokenGREATERTHAN) {
                         findOpeningPeer(getPosition(), bound, '<', '>');
-                        token= previousToken(getPosition(), bound);
+                        token = previousToken(getPosition(), bound);
                         if (token != Symbols.TokenLESSTHAN) {
                             return false;
                         }
-                        token= previousToken(getPosition(), bound);
+                        token = previousToken(getPosition(), bound);
                     }
                     continue; // another base type
                 }
-                if (token != Symbols.TokenCOLON) // colon after class def identifier
+                if (token != Symbols.TokenCOLON) { // colon after class def identifier
                     return false;
+                }
                 //$FALL-THROUGH$
             case Symbols.TokenCOLON:
-                token= previousToken(getPosition(), bound);
+                token = previousToken(getPosition(), bound);
                 break outerWhile;
             case Symbols.TokenCOMMA:
-                token= previousToken(getPosition(), bound);
+                token = previousToken(getPosition(), bound);
                 if (token == Symbols.TokenGREATERTHAN) {
                     findOpeningPeer(getPosition(), bound, '<', '>');
-                    token= previousToken(getPosition(), bound);
+                    token = previousToken(getPosition(), bound);
                     if (token != Symbols.TokenLESSTHAN) {
                         return false;
                     }
-                    token= previousToken(getPosition(), bound);
+                    token = previousToken(getPosition(), bound);
                 }
                 continue; // another base type
             case Symbols.TokenIDENT:
@@ -1191,18 +1300,16 @@ public final class CHeuristicScanner implements Symbols {
         if (token != Symbols.TokenIDENT) {
             return false;
         }
-        token= previousToken(getPosition(), bound);
-        switch (token) {
+        token = previousToken(getPosition(), bound);
+        return switch (token) {
         case Symbols.TokenCLASS:
         case Symbols.TokenSTRUCT:
         case Symbols.TokenUNION:
-        case Symbols.TokenENUM:  // enum is actually not valid here
-            return true;
+        case Symbols.TokenENUM: // enum is actually not valid here
+            yield true;
         default:
-            return false;
-        }
+            yield false;
+        };
     }
 
 }
-
-

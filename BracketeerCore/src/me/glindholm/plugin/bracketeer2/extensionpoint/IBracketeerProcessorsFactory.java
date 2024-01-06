@@ -7,15 +7,14 @@
  *
  * Contributors:
  *    Gil Barash - initial API and implementation
- *    
+ * 
  *******************************************************************************/
 package me.glindholm.plugin.bracketeer2.extensionpoint;
 
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.IEditorPart;
 
-public interface IBracketeerProcessorsFactory
-{
+public interface IBracketeerProcessorsFactory {
 
     BracketeerProcessor createProcessorFor(IEditorPart part, IDocument doc);
 

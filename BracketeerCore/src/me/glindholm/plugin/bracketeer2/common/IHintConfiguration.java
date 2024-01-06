@@ -10,8 +10,8 @@
  *******************************************************************************/
 package me.glindholm.plugin.bracketeer2.common;
 
-public interface IHintConfiguration
-{
-    public String getStringAttr(String type, String attr);
-    public boolean getBoolAttr(String type, String attr);
+public interface IHintConfiguration {
+    String getStringAttr(String type, String attr);
+
+    boolean getBoolAttr(String type, String attr);
 }

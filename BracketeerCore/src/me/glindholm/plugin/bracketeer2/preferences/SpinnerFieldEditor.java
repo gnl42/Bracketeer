@@ -24,27 +24,29 @@ public class SpinnerFieldEditor extends FieldEditor {
 
     private Composite _outer;
 
-    private Spinner   _spinner;
+    private Spinner _spinner;
 
-    public SpinnerFieldEditor(String name, String label, Composite parent) {
+    public SpinnerFieldEditor(final String name, final String label, final Composite parent) {
         super(name, label, parent);
     }
 
-    protected void adjustForNumColumns(int numColumns) {
+    @Override
+    protected void adjustForNumColumns(final int numColumns) {
         ((GridData) _outer.getLayoutData()).horizontalSpan = numColumns;
     }
 
-    protected void doFillIntoGrid(Composite parent, int numColumns) {
+    @Override
+    protected void doFillIntoGrid(final Composite parent, final int numColumns) {
         _outer = parent;
 
-        GridData griddata = new GridData(GridData.FILL_HORIZONTAL);
+        final GridData griddata = new GridData(GridData.FILL_HORIZONTAL);
         griddata.horizontalSpan = numColumns;
         _outer.setLayoutData(griddata);
 
-        Label label = getLabelControl(_outer);
+        final Label label = getLabelControl(_outer);
         label.setLayoutData(new GridData());
-        
-        _spinner = new Spinner(_outer, SWT.BORDER);        
+
+        _spinner = new Spinner(_outer, SWT.BORDER);
         _spinner.setLayoutData(new GridData());
         _spinner.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
     }
@@ -53,20 +55,24 @@ public class SpinnerFieldEditor extends FieldEditor {
         return _spinner;
     }
 
+    @Override
     protected void doLoad() {
-        int loadedint = getPreferenceStore().getInt(getPreferenceName());
+        final int loadedint = getPreferenceStore().getInt(getPreferenceName());
         _spinner.setSelection(loadedint);
     }
 
+    @Override
     protected void doLoadDefault() {
-        int loadedint = getPreferenceStore().getDefaultInt(getPreferenceName());
+        final int loadedint = getPreferenceStore().getDefaultInt(getPreferenceName());
         _spinner.setSelection(loadedint);
     }
 
+    @Override
     protected void doStore() {
         getPreferenceStore().setValue(getPreferenceName(), _spinner.getSelection());
     }
 
+    @Override
     public int getNumberOfControls() {
         return 2;
     }

@@ -18,25 +18,23 @@ import org.eclipse.ui.services.IDisposable;
 import me.glindholm.plugin.bracketeer2.Activator;
 import me.glindholm.plugin.bracketeer2.extensionpoint.BracketeerProcessor;
 
-public class ProcessingThread implements Runnable, IDocumentListener, IDisposable
-{
+public class ProcessingThread implements Runnable, IDocumentListener, IDisposable {
     private Thread _thread = null;
-    private IDocument _doc;
-    private BracketeerProcessor _processor;
-    private BracketeerProcessingContainer _bracketContainer;
-    //private Lock _bracketContainerLock = new ReentrantLock();
-    
+    private final IDocument _doc;
+    private final BracketeerProcessor _processor;
+    private final BracketeerProcessingContainer _bracketContainer;
+    // private Lock _bracketContainerLock = new ReentrantLock();
+
     private boolean _documentChanged;
-    
+
 //    private boolean _isProcessing;
 //    private boolean _cancelProcessing;
 //    private Semaphore _processingCanceled = new Semaphore(0);
-    private Object _docChangedLock = new Object();
+    private final Object _docChangedLock = new Object();
     private boolean _docIsChanging;
     private boolean _disposing;
-    
-    public ProcessingThread(IDocument doc, BracketeerProcessor processor)
-    {
+
+    public ProcessingThread(final IDocument doc, final BracketeerProcessor processor) {
         _processor = processor;
         _documentChanged = false;
         _docIsChanging = false;
@@ -44,54 +42,41 @@ public class ProcessingThread implements Runnable, IDocumentListener, IDisposabl
         _doc = doc;
         _bracketContainer = new BracketeerProcessingContainer(_doc);
 //        _isProcessing = false;        
-        
+
         _doc.addDocumentListener(this);
-        
+
         // initial mapping...
         documentChanged(null);
     }
-    
+
     @Override
-    public void dispose()
-    {
+    public void dispose() {
         _doc.removeDocumentListener(this);
         _disposing = true;
     }
-    
 
-    public void run()
-    {
-        while(!_disposing)
-        {                
-            while(_documentChanged || _docIsChanging || 
-                    _bracketContainer.isUpdatingListeners())
-            {
+    @Override
+    public void run() {
+        while (!_disposing) {
+            while (_documentChanged || _docIsChanging || _bracketContainer.isUpdatingListeners()) {
                 _documentChanged = false;
-                try
-                {
+                try {
                     Thread.sleep(250);
-                }
-                catch (InterruptedException e)
-                {
+                } catch (final InterruptedException e) {
                     Activator.log(e);
                 }
             } // waiting for document to stop changing
-            
+
             _bracketContainer.markAllToBeDeleted();
             boolean reRun = true;
-            try
-            {
+            try {
                 reRun = !_processor.process(_bracketContainer);
-            }
-            catch (Exception e)
-            {
+            } catch (final Exception e) {
                 Activator.log(e);
             }
-            
-            synchronized (_docChangedLock)
-            {
-                if( reRun || _documentChanged )
-                {
+
+            synchronized (_docChangedLock) {
+                if (reRun || _documentChanged) {
                     _documentChanged = true;
                     continue;
                 }
@@ -99,12 +84,12 @@ public class ProcessingThread implements Runnable, IDocumentListener, IDisposabl
                 break;
             }
         }
-        
+
         _bracketContainer.deleteAllMarked();
         _bracketContainer.updateComplete();
 
     }
-    
+
 //    public void run()
 //    {
 //        synchronized(_lock)
@@ -112,7 +97,7 @@ public class ProcessingThread implements Runnable, IDocumentListener, IDisposabl
 //            _cancelProcessing = false;
 //            _isProcessing = true;
 //        }
-//        
+//
 //        _processor.process(_bracketContainer);
 //
 //        synchronized(_lock)
@@ -132,11 +117,11 @@ public class ProcessingThread implements Runnable, IDocumentListener, IDisposabl
 //                return;
 //            _cancelProcessing = true;
 //        }
-//        
+//
 //        _processor.cancel();
-//        
+//
 //        try
-//        {                       
+//        {
 //            _processingCanceled.acquire();
 //        }
 //        catch (InterruptedException e)
@@ -145,29 +130,24 @@ public class ProcessingThread implements Runnable, IDocumentListener, IDisposabl
 //        }
 //    }
 
-    public BracketeerProcessingContainer getBracketContainer()
-    {
+    public BracketeerProcessingContainer getBracketContainer() {
         return _bracketContainer;
     }
-    
-    
+
     @Override
-    public void documentAboutToBeChanged(DocumentEvent event)
-    {
+    public void documentAboutToBeChanged(final DocumentEvent event) {
         _docIsChanging = true;
     }
-    
+
     @Override
-    public void documentChanged(DocumentEvent event)
-    {
-        // TODO: optimize - put the event in an events list so that the processor could parse only part of the file
+    public void documentChanged(final DocumentEvent event) {
+        // TODO: optimize - put the event in an events list so that the processor could parse only part of
+        // the file
 
         _docIsChanging = false;
-        synchronized (_docChangedLock)
-        {
+        synchronized (_docChangedLock) {
             _documentChanged = true;
-            if( _thread == null)
-            {
+            if (_thread == null) {
                 _thread = new Thread(this, "ProcessingThread"); //$NON-NLS-1$
                 _thread.start();
             }
