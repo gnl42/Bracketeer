@@ -1,7 +1,9 @@
 Overview
 ========
 
-Bracketeer is a platform used to enrich the editors in Eclipse.
+Bracketeer2 is a platform used to enrich the editors in Eclipse.
+It is a fork of (Bracketeer)[https://github.com/chookapp/Bracketeer] updated to work with current Eclipse.
+
 #### Features:
 
 - Coloring the brackets surrounding the cursor & brackets which have no match.
@@ -10,14 +12,14 @@ Bracketeer is a platform used to enrich the editors in Eclipse.
 
 #### Current supported editors:
 
-- JDT (java) 
+- JDT (java)
 - CDT (C/C++).
 
-Installation 
+Installation
 ============
-In your Eclipse, go to: Help->Install new software...  
-Enter the URL (in "Work with"): **http://chookapp.github.com/ChookappUpdateSite/**  
-From the chookapp category, choose any Bracketeer editor support you want (CDT - for C/C++, JDT - for java, etc...).  
+In your Eclipse, go to: Help->Install new software...
+Enter the URL (in "Add..."): **https://gnl42.github.io/Bracketeer2-update/**
+From the chookapp category, choose any Bracketeer editor support you want (CDT - for C/C++, JDT - for java, etc...).
 For example, choosing "Bracketeer CDT support" will install the Bracketeer infrastructure (if not already installed) and the CDT editor support. *It is not advised to install a Bracketeer support for an editor type which is not already installed in your Eclipse (although it shouldn't do any actual harm)*.
 
 Enjoy.
@@ -27,18 +29,22 @@ Screen shots
 
 ![screenshot](https://github.com/chookapp/Bracketeer/raw/master/Bracketeer/doc/all-surrounding-hyperlink.JPG)
 
-You can find more information and screenshots in the [Wiki](https://github.com/chookapp/Bracketeer/wiki) or in the preferences help pages (after installing Bracketeer in Eclipse)
+You can find more information and screenshots in the [Wiki](https://github.com/gnl42/Bracketeer2/wiki) or in the preferences help pages (after installing Bracketeer2 in Eclipse)
 
 Feedback
 ========
 
-* Found a bug? Have a feature request? Visit the [issues page](https://github.com/chookapp/Bracketeer/issues).
-* Have a comment you want to share? Want to support Bracketeer? Visit the Eclipse Marketplace pages [Bracketeer for C/C++](http://marketplace.eclipse.org/content/bracketeer-cc-cdt), [Bracketeer for Java](http://marketplace.eclipse.org/content/bracketeer-java-jdt)
+* Found a bug? Have a feature request? Visit the [issues page](https://github.com/gnl42/Bracketeer2/issues).
 
 Build notes
 ============
 
-Build 2.0.0 (3/3/2012)
+Build 2.0.0 (2024/01/06)
+-----------
+
+* Update build for current Eclipse
+
+Build 1.2.0 (3/3/2012)
 -----------
 
 * Modified default hot-keys for enable/disable hints (**Ctrl-[, Ctrl-H**) and enable/disable surrounding brackets (**Ctrl-[, Ctrl-S**), as suggested in [issue 7](https://github.com/chookapp/Bracketeer/issues/7).

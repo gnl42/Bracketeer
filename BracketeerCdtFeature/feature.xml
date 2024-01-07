@@ -3,9 +3,9 @@
       id="me.glindholm.plugin.bracketeer2.CDTFeature"
       label="Bracketeer CDT support"
       version="2.0.0.qualifier"
-      provider-name="Chookapp">
+      provider-name="George Lindholm">
 
-   <description url="https://github.com/chookapp/Bracketeer">
+   <description url="https://github.com/gnl42/Bracketeer">
       This plugin is an extension for the Bracketeer plugin.
 It adds support for the CDT (C/C++) eclipse tool.
    </description>
@@ -19,7 +19,7 @@ It adds support for the CDT (C/C++) eclipse tool.
    </license>
 
    <url>
-      <update url="http://chookapp.github.com/ChookappUpdateSite/"/>
+      <update url="https://gnl42.github.io/Bracketeer2-update/"/>
    </url>
 
    <requires>

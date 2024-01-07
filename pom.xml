@@ -16,6 +16,7 @@
         <module>BracketeerCdtFeature</module>
         <module>BracketeerJDT</module>
         <module>BracketeerJdtFeature</module>
+        <module>BracketeerSite</module>
     </modules>
     <properties>
         <tycho.version>4.0.4</tycho.version>
@@ -23,18 +24,18 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <!-- Required properties for releasing -->
-        <github-update-repo>git@github.com:gnl42/bracketeer2-update.git</github-update-repo>
+        <github-update-repo>git@github.com:gnl42/Bracketeer2-update.git</github-update-repo>
         <github-local-clone>${project.build.directory}/checkout</github-local-clone>
         <releases-directory>${github-local-clone}/releases</releases-directory>
         <current-release-directory>${releases-directory}/${qualifiedVersion}</current-release-directory>
         <!-- The label for the Composite sites -->
-        <site.label>bracketeer2</site.label>
+        <site.label>Bracketeer2</site.label>
     </properties>
 
     <scm>
         <connection> scm:git:git@github.com:gnl42/bracketeer2.git</connection>
-        <url> scm:git:git@github.com:gnl42/bracketeer2.git</url>
-        <developerConnection>scm:git:git@github.com:gnl42/bracketeer2.git</developerConnection>
+        <url> scm:git:git@github.com:gnl42/Bracketeer2.git</url>
+        <developerConnection>scm:git:git@github.com:gnl42/Bracketeer2.git</developerConnection>
         <tag>2.0.0</tag>
     </scm>
 
@@ -46,16 +47,14 @@
             </roles>
         </developer>
     </developers>
-    <contributors>
+        <contributors>
         <contributor>
-            <name>Atanas Roussev</name>
-            <organization>nextinterfaces.com</organization>
-            <url>https://nextinterfaces.com/http4e</url>
+            <name>Gil Barash</name>
+            <url>https://github.com/chookapp</url>
             <roles>
                 <role>Author</role>
             </roles>
-            <timezone></timezone>
-        </contributor>
+         </contributor>
     </contributors>
 
     <build>
@@ -213,7 +212,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>3.1.1</version>
 
             </plugin>
             <plugin>

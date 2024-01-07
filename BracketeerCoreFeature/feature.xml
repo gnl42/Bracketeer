@@ -3,9 +3,9 @@
       id="me.glindholm.plugin.bracketeer2.feature"
       label="Bracketeer"
       version="2.0.0.qualifier"
-      provider-name="Chookapp">
+      provider-name="George Lindholm">
 
-   <description url="https://github.com/chookapp/Bracketeer">
+   <description url="https://github.com/gnl42/Bracketeer2">
       Bracketeer is a multi-language brackets assistant.
 - Coloring matching bracket
 - Telling you what statement this bracket closes (class, function,
@@ -24,7 +24,7 @@ without it.
    </license>
 
    <url>
-      <update url="http://chookapp.github.com/ChookappUpdateSite/"/>
+      <update url="https://gnl42.github.io/Bracketeer2-update/"/>
    </url>
 
    <requires>
