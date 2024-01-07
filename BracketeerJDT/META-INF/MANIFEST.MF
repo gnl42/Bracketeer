@@ -1,15 +1,15 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
-Bundle-SymbolicName: com.chookapp.org.BracketeerJDT;singleton:=true
-Bundle-Version: 1.2.0.qualifier
-Bundle-Activator: com.chookapp.org.bracketeer.jdt.Activator
+Bundle-SymbolicName: me.glindholm.plugin.bracketeer2.JDT;singleton:=true
+Bundle-Version: 2.0.0.qualifier
+Bundle-Activator: me.glindholm.plugin.bracketeer2.jdt.Activator
 Bundle-Vendor: %Bundle-Vendor
 Require-Bundle: org.eclipse.core.runtime,
- com.chookapp.org.Bracketeer,
  org.eclipse.jface.text,
  org.eclipse.ui,
  org.eclipse.jdt.core,
- org.eclipse.jdt.ui
-Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+ org.eclipse.jdt.ui,
+ me.glindholm.plugin.bracketeer2.core;bundle-version="2.0.0"
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy

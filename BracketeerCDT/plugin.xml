@@ -2,9 +2,9 @@
 <?eclipse version="3.4"?>
 <plugin>
    <extension
-         point="com.chookapp.org.bracketeer.processorsFactory">
+         point="me.glindholm.plugin.bracketeer2.processorsFactory">
       <BracketeerProcessorsFactory
-            class="com.chookapp.org.bracketeer.cdt.BracketeerProcessorsFactory"
+            class="me.glindholm.plugin.bracketeer2.cdt.BracketeerProcessorsFactory"
             name="CDT"
             supportedBrackets="()[]&lt;&gt;{}">
          <Hint

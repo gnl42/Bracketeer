@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature id="me.glindholm.plugin.bracketeer2.feature" version="2.0.0.qualifier">
+      <category name="me.glindholm.plugin.bracketeer2"/>
+   </feature>
+   <feature id="me.glindholm.plugin.bracketeer2.JDTFeature" version="2.0.0.qualifier">
+      <category name="me.glindholm.plugin.bracketeer2"/>
+   </feature>
+   <feature id="me.glindholm.plugin.bracketeer2.CDTFeature" version="2.0.0.qualifier">
+      <category name="me.glindholm.plugin.bracketeer2.optional"/>
+   </feature>
+   <category-def name="me.glindholm.plugin.bracketeer2" label="Bracketeer2"/>
+   <category-def name="me.glindholm.plugin.bracketeer2.optional" label="Bracketeer2 (CDT)">
+      <description>
+         C++ support (unsupported)
+      </description>
+   </category-def>
+</site>

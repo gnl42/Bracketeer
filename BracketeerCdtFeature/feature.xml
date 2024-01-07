@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-      id="com.chookapp.org.BracketeerCDT"
+      id="me.glindholm.plugin.bracketeer2.CDTFeature"
       label="Bracketeer CDT support"
-      version="1.2.0.qualifier"
-      provider-name="Chookapp">
+      version="2.0.0.qualifier"
+      provider-name="George Lindholm">
 
-   <description url="https://github.com/chookapp/Bracketeer">
+   <description url="https://github.com/gnl42/Bracketeer">
       This plugin is an extension for the Bracketeer plugin.
 It adds support for the CDT (C/C++) eclipse tool.
    </description>
@@ -19,12 +19,12 @@ It adds support for the CDT (C/C++) eclipse tool.
    </license>
 
    <url>
-      <update url="http://chookapp.github.com/ChookappUpdateSite/"/>
+      <update url="https://gnl42.github.io/Bracketeer2-update/"/>
    </url>
 
    <requires>
       <import plugin="org.eclipse.core.runtime"/>
-      <import plugin="com.chookapp.org.Bracketeer"/>
+      <import plugin="me.glindholm.plugin.bracketeer2.core"/>
       <import plugin="org.eclipse.jface.text"/>
       <import plugin="org.eclipse.cdt.core"/>
       <import plugin="org.eclipse.cdt.ui"/>
@@ -33,10 +33,7 @@ It adds support for the CDT (C/C++) eclipse tool.
    </requires>
 
    <plugin
-         id="com.chookapp.org.BracketeerCDT"
-         download-size="0"
-         install-size="0"
-         version="1.2.0.qualifier"
-         unpack="false"/>
+         id="me.glindholm.plugin.bracketeer2.CDT"
+         version="2.0.0.qualifier"/>
 
 </feature>
