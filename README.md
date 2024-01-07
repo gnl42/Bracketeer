@@ -2,7 +2,7 @@ Overview
 ========
 
 Bracketeer2 is a platform used to enrich the editors in Eclipse.
-It is a fork of (Bracketeer)[https://github.com/chookapp/Bracketeer] updated to work with current Eclipse.
+It is a fork of [Bracketeer](https://github.com/chookapp/Bracketeer) updated to work with current Eclipse.
 
 #### Features:
 
