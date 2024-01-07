@@ -202,7 +202,7 @@
          point="org.eclipse.help.contexts">
       <contexts
             file="context.xml"
-            plugin="com.choockapp.org.bracketeer">
+            plugin="me.glindholm.plugin.bracketeer2.core">
       </contexts>
    </extension>
    <extension

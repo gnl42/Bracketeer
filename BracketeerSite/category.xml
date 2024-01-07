@@ -12,7 +12,7 @@
    <category-def name="me.glindholm.plugin.bracketeer2" label="Bracketeer2"/>
    <category-def name="me.glindholm.plugin.bracketeer2.optional" label="Bracketeer2 (CDT)">
       <description>
-         C++ support (unsupported)
+         CDT support (unsupported)
       </description>
    </category-def>
 </site>

@@ -5,7 +5,7 @@
       version="2.0.0.qualifier"
       provider-name="George Lindholm">
 
-   <description url="https://github.com/gnl42/Bracketeer">
+   <description url="https://github.com/gnl42/Bracketeer2">
       This plugin is an extension for the Bracketeer plugin.
 It adds support for the CDT (C/C++) eclipse tool.
    </description>

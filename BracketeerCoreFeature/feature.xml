@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
       id="me.glindholm.plugin.bracketeer2.feature"
-      label="Bracketeer"
+      label="Bracketeer2"
       version="2.0.0.qualifier"
       provider-name="George Lindholm">
 
    <description url="https://github.com/gnl42/Bracketeer2">
-      Bracketeer is a multi-language brackets assistant.
+      Bracketeer2 is a multi-language brackets assistant.
 - Coloring matching bracket
 - Telling you what statement this bracket closes (class, function,
 if, etc...)
